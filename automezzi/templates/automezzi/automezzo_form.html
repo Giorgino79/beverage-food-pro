@@ -1,10 +1,32 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{% if object %}Modifica{% else %}Nuovo{% endif %} Automezzo{% endblock %}
 {% block content %}
-<h1>{% if object %}Modifica{% else %}Nuovo{% endif %} Automezzo</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Salva</button>
-</form>
-<a href="{% url 'automezzi:list' %}">Torna all'elenco</a>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            {% if object %}<i class="fas fa-edit"></i> Modifica Automezzo{% else %}<i class="fas fa-plus"></i> Nuovo Automezzo{% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Salva
+              </button>
+              <a href="{% url 'automezzi:automezzo_list' %}" class="btn btn-light ms-2">
+                Annulla
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

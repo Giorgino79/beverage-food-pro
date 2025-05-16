@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>Ordini Ricevuti</h1>
+  <a href="{% url 'ordini:lista_ordini' %}" class="btn btn-secondary mb-3">Torna alla Lista Ordini</a>
+  {% if ordini %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Prodotto</th>
+          <th>Fornitore</th>
+          <th>Quantità Ricevuta</th>
+          <th>Data Ricezione</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ordine in ordini %}
+          <tr>
+            <td>{{ ordine.id }}</td>
+            <td>{{ ordine.prodotto.nome_prodotto }}</td>
+            <td>{{ ordine.fornitore.nome }}</td>
+            <td>
+              {% if ordine.ricezione %}
+                {% for prodotto_ricevuto in ordine.ricezione.prodotti_ricevuti.all %}
+                  {{ prodotto_ricevuto.prodotto.nome_prodotto }}: {{ prodotto_ricevuto.quantita_ricevuta }}<br>
+                {% empty %}
+                  N/A
+                {% endfor %}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>{{ ordine.data_ricezione_ordine|date:"d/m/Y"|default:"N/A" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nessun ordine ricevuto.</p>
+  {% endif %}
+{% endblock %}

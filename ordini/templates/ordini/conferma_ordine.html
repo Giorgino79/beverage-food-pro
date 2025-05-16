@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Conferma Ordine</h1>
+  <p>Sei sicuro di voler confermare l'ordine N. {{ ordine.id }} e inviarlo al fornitore {{ ordine.fornitore.nome }}?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Conferma e Invia</button>
+    <a href="{% url 'ordini:lista_ordini' %}" class="btn btn-secondary">Annulla</a>
+  </form>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Elimina Ordine</h1>
+  <p>Sei sicuro di voler eliminare l'ordine N. {{ ordine.id }}?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Conferma eliminazione</button>
+    <a href="{% url 'ordini:lista_ordini' %}" class="btn btn-secondary">Annulla</a>
+  </form>
+{% endblock %}

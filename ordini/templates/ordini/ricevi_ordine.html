@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ricevi Ordine {{ ordine.id }}{% endblock title %}
+
+{% block content %}
+    <h1>Ricevi Ordine {{ ordine.id }}</h1>
+
+    <p>Stai ricevendo i prodotti per l'ordine numero: <strong>{{ ordine.id }}</strong> del fornitore <strong>{{ ordine.fornitore }}</strong> (Prodotto: {{ ordine.prodotto }}, Quantità Ordinata: {{ ordine.quantita_ordinata }} {{ ordine.get_misura_display }}).</p>
+
+    <form method="post">
+        {% csrf_token %}
+        
+
+        <h2>Prodotti Ricevuti</h2>
+        {{ prodotti_ricevuti_formset.management_form|crispy }}
+        {% for form in prodotti_ricevuti_formset %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Prodotto Ricevuto #{{ forloop.counter }}</h5>
+                    <p>Prodotto Ordinato: {{ ordine.prodotto }}</p>
+                    {{ form.quantita_ricevuta|as_crispy_field }}
+                    {{ form.data_scadenza|as_crispy_field }}
+                    {{ form.prodotto.as_hidden }}
+                </div>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Registra Ricezione</button>
+        <a href="{% url 'ordini:lista_ordini_da_ricevere' %}" class="btn btn-secondary">Annulla</a>
+        
+        <fieldset>
+            <legend>Informazioni Ricezione</legend>
+            {{ ricezione_form.note|as_crispy_field }}
+            {{ ricezione_form.ordine.as_hidden }}
+        </fieldset>
+    </form>
+{% endblock content %}

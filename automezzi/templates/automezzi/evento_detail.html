@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Dettaglio Evento{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 text-primary"><i class="fas fa-calendar-alt"></i> {{ evento.titolo }}</h4>
+          <a href="{% url 'automezzi:evento_list' automezzo_pk=evento.automezzo.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Torna all’elenco</a>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Automezzo:</dt>
+            <dd class="col-sm-8">{{ evento.automezzo }}</dd>
+            <dt class="col-sm-4">Titolo:</dt>
+            <dd class="col-sm-8">{{ evento.titolo }}</dd>
+            <dt class="col-sm-4">Data:</dt>
+            <dd class="col-sm-8">{{ evento.data|date:"d/m/Y" }}</dd>
+            <dt class="col-sm-4">Descrizione:</dt>
+            <dd class="col-sm-8">{{ evento.descrizione }}</dd>
+            <dt class="col-sm-4">Note:</dt>
+            <dd class="col-sm-8">{{ evento.note|default:"—" }}</dd>
+          </dl>
+        </div>
+        <div class="card-footer text-end">
+          <a href="{% url 'automezzi:evento_update' evento.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Modifica</a>
+          <a href="{% url 'automezzi:evento_delete' evento.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Elimina</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

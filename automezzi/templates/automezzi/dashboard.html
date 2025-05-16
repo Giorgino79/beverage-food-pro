@@ -1,46 +1,159 @@
 {% extends "base.html" %}
+{% block title %}Dashboard Automezzi{% endblock %}
 {% block content %}
-<h1>Dashboard Automezzi</h1>
-<ul>
-    <li><strong>Totale automezzi:</strong> {{ automezzi_count }}</li>
-    <li><strong>Attivi:</strong> {{ attivi_count }}</li>
-    <li><strong>Disponibili:</strong> {{ disponibili_count }}</li>
-    <li><strong>Blocchi:</strong>
-        <ul>
-        {% for auto in automezzi_bloccati %}
-            <li>{{ auto.targa }} - {{ auto.motivo_blocco }}</li>
-        {% empty %}
-            <li>Nessun automezzo bloccato</li>
-        {% endfor %}
+<div class="container py-4">
+  <h2 class="mb-4"><i class="fas fa-warehouse"></i> Dashboard Automezzi</h2>
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-5 fw-bold text-primary">{{ tot_automezzi }}</div>
+              <div class="text-muted">Automezzi attivi</div>
+            </div>
+            <i class="fas fa-car fa-2x text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-5 fw-bold text-success">{{ tot_manutenzioni }}</div>
+              <div class="text-muted">Manutenzioni totali</div>
+            </div>
+            <i class="fas fa-tools fa-2x text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-5 fw-bold text-info">{{ tot_rifornimenti }}</div>
+              <div class="text-muted">Rifornimenti totali</div>
+            </div>
+            <i class="fas fa-gas-pump fa-2x text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-5 fw-bold text-warning">{{ tot_eventi }}</div>
+              <div class="text-muted">Eventi totali</div>
+            </div>
+            <i class="fas fa-calendar-alt fa-2x text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Ultimi automezzi -->
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold"><i class="fas fa-car"></i> Ultimi automezzi</span>
+          <a href="{% url 'automezzi:automezzo_list' %}" class="btn btn-sm btn-outline-primary">Vedi tutti</a>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for automezzo in ultimi_automezzi %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <strong>{{ automezzo.targa }}</strong> - {{ automezzo.marca }} {{ automezzo.modello }}
+              {% if not automezzo.attivo %}
+                <span class="badge bg-danger ms-2">Non attivo</span>
+              {% endif %}
+            </span>
+            <a href="{% url 'automezzi:automezzo_detail' automezzo.pk %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted">Nessun automezzo recente.</li>
+          {% endfor %}
         </ul>
-    </li>
-    <li><strong>Manutenzioni in corso:</strong> {{ manutenzioni_in_corso|length }}</li>
-    <li><strong>Prossime revisioni:</strong>
-        <ul>
-        {% for auto in prossime_revisioni %}
-            <li>{{ auto.targa }} - {{ auto.data_revisione }}</li>
-        {% empty %}
-            <li>Nessuna revisione imminente</li>
-        {% endfor %}
+      </div>
+    </div>
+    <!-- Ultime manutenzioni -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold"><i class="fas fa-tools"></i> Ultime manutenzioni</span>
+          <a href="{% url 'automezzi:manutenzione_list' %}" class="btn btn-sm btn-outline-primary">Vedi tutte</a>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for manutenzione in ultime_manutenzioni %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <strong>{{ manutenzione.automezzo }}</strong> - {{ manutenzione.tipologia }},
+              <span class="text-muted">{{ manutenzione.data_prevista|date:"d/m/Y" }}</span>
+              {% if manutenzione.completata %}
+                <span class="badge bg-success ms-2">Completata</span>
+              {% else %}
+                <span class="badge bg-warning text-dark ms-2">Da completare</span>
+              {% endif %}
+            </span>
+            <a href="{% url 'automezzi:manutenzione_detail' manutenzione.pk %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted">Nessuna manutenzione recente.</li>
+          {% endfor %}
         </ul>
-    </li>
-    <li><strong>Ultimi eventi:</strong>
-        <ul>
-        {% for evento in eventi_recenti %}
-            <li>{{ evento.data_evento }} - {{ evento.get_tipo_display }} su {{ evento.automezzo }}</li>
-        {% empty %}
-            <li>Nessun evento recente</li>
-        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <!-- Ultimi rifornimenti ed eventi -->
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold"><i class="fas fa-gas-pump"></i> Ultimi rifornimenti</span>
+          <a href="{% url 'automezzi:rifornimento_list' %}" class="btn btn-sm btn-outline-primary">Vedi tutti</a>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for rifornimento in ultimi_rifornimenti %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <strong>{{ rifornimento.automezzo }}</strong> - {{ rifornimento.quantita }} L,
+              €{{ rifornimento.costo_totale }} <span class="text-muted">({{ rifornimento.data|date:"d/m/Y" }})</span>
+            </span>
+            <a href="{% url 'automezzi:rifornimento_detail' rifornimento.pk %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted">Nessun rifornimento recente.</li>
+          {% endfor %}
         </ul>
-    </li>
-    <li><strong>Ultimi rifornimenti:</strong>
-        <ul>
-        {% for rif in rifornimenti_recenti %}
-            <li>{{ rif.data }} - {{ rif.automezzo }} - {{ rif.litri }} L</li>
-        {% empty %}
-            <li>Nessun rifornimento recente</li>
-        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold"><i class="fas fa-calendar-alt"></i> Ultimi eventi</span>
+          <a href="{% url 'automezzi:evento_list' %}" class="btn btn-sm btn-outline-primary">Vedi tutti</a>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for evento in ultimi_eventi %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <strong>{{ evento.titolo }}</strong> - {{ evento.automezzo }},
+              <span class="text-muted">{{ evento.data|date:"d/m/Y" }}</span>
+            </span>
+            <a href="{% url 'automezzi:evento_detail' evento.pk %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted">Nessun evento recente.</li>
+          {% endfor %}
         </ul>
-    </li>
-</ul>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

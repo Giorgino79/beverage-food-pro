@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>Nuovo Prodotto</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Salva</button>
+    <a href="{% url 'ordini:lista_prodotti' %}" class="btn btn-secondary">Annulla</a>
+  </form>
+{% endblock %}

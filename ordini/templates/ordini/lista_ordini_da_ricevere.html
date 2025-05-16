@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>Ordini da Ricevere</h1>
+  <a href="{% url 'ordini:lista_ordini' %}" class="btn btn-secondary mb-3">Torna alla Lista Ordini</a>
+  {% if ordini %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Prodotto</th>
+          <th>Fornitore</th>
+          <th>Quantità</th>
+          <th>Data Invio</th>
+          <th>Data Arrivo Prevista</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ordine in ordini %}
+          <tr>
+            <td>{{ ordine.id }}</td>
+            <td>{{ ordine.prodotto.nome_prodotto }}</td>
+            <td>{{ ordine.fornitore.nome }}</td>
+            <td>{{ ordine.quantita_ordinata }}{% if ordine.misura == ordine.Misura.confezione %} ({{ ordine.quantita_per_confezione_ordinata }} pz/conf){% endif %} {{ ordine.get_misura_display }}</td>
+            <td>{{ ordine.data_invio_ordine|date:"d/m/Y"|default:"N/A" }}</td>
+            <td>{{ ordine.data_arrivo_previsto|date:"d/m/Y"|default:"N/A" }}</td>
+            <td>
+              <a href="{% url 'ordini:ricevi_ordine' ordine.pk %}" class="btn btn-sm btn-success">Ricevi Ordine</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nessun ordine in attesa di ricezione.</p>
+  {% endif %}
+{% endblock %}

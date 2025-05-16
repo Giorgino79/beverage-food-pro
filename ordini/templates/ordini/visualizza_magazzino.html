@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Inventario Magazzino</h1>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Prodotto</th>
+        <th>Quantità</th>
+        <th>Data Scadenza</th>
+        <th>Data Ingresso</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in inventario %}
+        <tr>
+          <td>{{ item.prodotto.nome_prodotto }}</td>
+          <td>{{ item.quantita_in_magazzino }} {{item.prodotto.misura}}</td>
+          <td>{{ item.data_scadenza|date:"d/m/Y"|default:"N/A" }}</td>
+          <td>{{ item.data_ingresso|date:"d/m/Y" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Nessun articolo in magazzino.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

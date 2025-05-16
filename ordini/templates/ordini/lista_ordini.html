@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Ordini{% endblock title %}
+{% block content %}
+<h1>Elenco di tutti gli ordini</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Prodotto</th>
+            <th>Fornitore</th>
+            <th>Quantità ordinata</th>
+            <th>Imponibile Ordine</th>
+            <th>Data Arrivo</th>
+            <th>Pdf Ordine</th>
+            <th>Azioni</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ordine in ordini %}
+        <tr>
+            <td>{{ ordine.id }}</td>
+            <td>{{ ordine.prodotto }}</td>
+            <td>{{ ordine.fornitore }}</td>
+            <td>{{ ordine.quantita_ordinata }} {{ordine.prodotto.misura}}</td>
+            <td>{{ordine.prezzo_totale_ordine }} €</td>
+            <td>{{ ordine.data_arrivo_previsto }}</td>
+            <td>{% if ordine.pdf_ordine %}<a href="{{ ordine.pdf_ordine.url }}" target="_blank"><i class="fas fa-file-pdf"></i> </a>{% else %}Pdf non disponibile{% endif %}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'ordini:modifica_ordine' ordine.id %}" class="btn btn-sm btn-warning me-2">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {% if not ordine.data_invio_ordine %}
+                    <form method="post" action="{% url 'ordini:conferma_ordine' ordine.id %}" class="me-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-info">
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if not ordine.data_ricezione_ordine %}
+                    <a href="{% url 'ordini:ricevi_ordine' ordine.id %}" class="btn btn-sm btn-success me-2">
+                        <i class="fas fa-truck"></i>
+                    </a>
+                    {% endif %}
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminaOrdineModal{{ ordine.id }}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+
+                    <div class="modal fade" id="eliminaOrdineModal{{ ordine.id }}" tabindex="-1" aria-labelledby="eliminaOrdineLabel{{ ordine.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="eliminaOrdineLabel{{ ordine.id }}">Conferma Eliminazione</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Sei sicuro di voler eliminare l'ordine con ID {{ ordine.id }}? Questa azione è irreversibile.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                    <form method="post" action="{% url 'ordini:elimina_ordine' ordine.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Elimina</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}

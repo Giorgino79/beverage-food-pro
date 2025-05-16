@@ -12,11 +12,11 @@ app_name = "automezzi"
 urlpatterns = [
       path("", DashboardView.as_view(), name="dashboard"),
     # AUTOMEZZI
-    path("automezzi/", AutomezzoListView.as_view(), name="list"),
-    path("automezzi/nuovo/", AutomezzoCreateView.as_view(), name="create"),
-    path("automezzi/<int:pk>/", AutomezzoDetailView.as_view(), name="detail"),
-    path("automezzi/<int:pk>/modifica/", AutomezzoUpdateView.as_view(), name="update"),
-    path("automezzi/<int:pk>/elimina/", AutomezzoDeleteView.as_view(), name="delete"),
+    path("automezzi/", AutomezzoListView.as_view(), name="automezzo_list"),
+    path("automezzi/nuovo/", AutomezzoCreateView.as_view(), name="automezzo_create"),
+    path("automezzi/<int:pk>/", AutomezzoDetailView.as_view(), name="automezzo_detail"),
+    path("automezzi/<int:pk>/modifica/", AutomezzoUpdateView.as_view(), name="automezzo_update"),
+    path("automezzi/<int:pk>/elimina/", AutomezzoDeleteView.as_view(), name="automezzo_delete"),
 
     # MANUTENZIONI
     path("manutenzioni/", ManutenzioneListView.as_view(), name="manutenzione_list"),

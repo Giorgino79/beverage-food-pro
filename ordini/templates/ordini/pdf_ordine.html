@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ordine N. {{ ordine.id }}</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
+        .container { width: 100%; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .details { margin-bottom: 10px; }
+        .product-table { width: 100%; border-collapse: collapse; }
+        .product-table th, .product-table td { border: 1px solid black; padding: 5px; text-align: left; }
+        .total { text-align: right; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ordine N. {{ ordine.id }}</h1>
+            <p>Data: {{ ordine.save_date|date:"d F Y H:i" }}</p> </div>
+        <div class="details">
+            <p><strong>Fornitore:</strong> {{ ordine.fornitore.nome }} (Email: {{ ordine.fornitore.email }})</p>
+        </div>
+        <h2>Dettagli Prodotto</h2>
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Prodotto</th>
+                    <th>Misura</th>
+                    {% if ordine.misura == ordine.Misura.confezione %}
+                    <th>Pezzi/Confezione</th>
+                    {% endif %}
+                    <th>Quantità Ordinata</th>
+                    <th>Prezzo Unitario</th>
+                    <th>Prezzo Totale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ ordine.prodotto.nome_prodotto }}</td>
+                    <td>{{ ordine.get_misura_display }}</td>
+                    {% if ordine.misura == ordine.Misura.confezione %}
+                    <td>{{ ordine.quantita_per_confezione_ordinata }}</td>
+                    {% endif %}
+                    <td>{{ ordine.quantita_ordinata }}</td>
+                    <td>{{ ordine.prezzo_unitario_ordine }}</td>
+                    <td>{{ ordine.prezzo_totale_ordine }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="total">
+            <p><strong>Prezzo Totale Ordine:</strong> {{ ordine.prezzo_totale_ordine }}</p>
+            <p><strong>Totale Ordine (IVA Inclusa):</strong> {{ ordine.totale_ordine_ivato }}</p>
+        </div>
+        <div class="footer">
+            <p>Grazie per il suo ordine.</p>
+        </div>
+    </div>
+</body>
+</html>

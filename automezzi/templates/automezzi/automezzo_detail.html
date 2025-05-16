@@ -1,24 +1,57 @@
 {% extends "base.html" %}
+{% block title %}Dettaglio Automezzo: {{ automezzo.targa }}{% endblock %}
 {% block content %}
-<h1>Dettaglio automezzo: {{ automezzo.targa }}</h1>
-<ul>
-    <li>Marca: {{ automezzo.marca }}</li>
-    <li>Modello: {{ automezzo.modello }}</li>
-    <li>Anno: {{ automezzo.anno_immatricolazione }}</li>
-    <li>Chilometri: {{ automezzo.chilometri_attuali }}</li>
-    <li>Attivo: {{ automezzo.attivo }}</li>
-    <li>Disponibile: {{ automezzo.disponibile }}</li>
-    <li>Bloccata: {{ automezzo.bloccata }}</li>
-    <li>Motivo blocco: {{ automezzo.motivo_blocco }}</li>
-    <li>Libretto fronte: {% if automezzo.libretto_fronte %}<a href="{{ automezzo.libretto_fronte.url }}">Scarica</a>{% endif %}</li>
-    <li>Libretto retro: {% if automezzo.libretto_retro %}<a href="{{ automezzo.libretto_retro.url }}">Scarica</a>{% endif %}</li>
-    <li>Assicurazione: {% if automezzo.assicurazione %}<a href="{{ automezzo.assicurazione.url }}">Scarica</a>{% endif %}</li>
-    <li>Data revisione: {{ automezzo.data_revisione }}</li>
-    <li>Assegnato a: {{ automezzo.assegnato_a }}</li>
-</ul>
-<a href="{% url 'automezzi:update' automezzo.pk %}">Modifica</a> |
-<a href="{% url 'automezzi:delete' automezzo.pk %}">Elimina</a> |
-<a href="{% url 'automezzi:manutenzione_list_automezzo' automezzo.pk %}">Manutenzioni</a> |
-<a href="{% url 'automezzi:rifornimento_list_automezzo' automezzo.pk %}">Rifornimenti</a> |
-<a href="{% url 'automezzi:evento_list_automezzo' automezzo.pk %}">Eventi</a>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 text-primary"><i class="fas fa-car"></i> {{ automezzo.targa }}</h4>
+          <a href="{% url 'automezzi:automezzo_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Torna all’elenco</a>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Marca:</dt>
+            <dd class="col-sm-8">{{ automezzo.marca }}</dd>
+            <dt class="col-sm-4">Modello:</dt>
+            <dd class="col-sm-8">{{ automezzo.modello }}</dd>
+            <dt class="col-sm-4">Anno immatricolazione:</dt>
+            <dd class="col-sm-8">{{ automezzo.anno_immatricolazione }}</dd>
+            <dt class="col-sm-4">Tipo carburante:</dt>
+            <dd class="col-sm-8">{{ automezzo.tipo_carburante }}</dd>
+            <dt class="col-sm-4">Chilometri attuali:</dt>
+            <dd class="col-sm-8">{{ automezzo.chilometri_attuali }}</dd>
+            <dt class="col-sm-4">Assegnato a:</dt>
+            <dd class="col-sm-8">
+              {% if automezzo.assegnato_a %}
+                {{ automezzo.assegnato_a }}
+              {% else %}
+                <span class="text-muted">Non assegnato</span>
+              {% endif %}
+            </dd>
+            <dt class="col-sm-4">Stato:</dt>
+            <dd class="col-sm-8">
+              {% if automezzo.attivo %}
+                <span class="badge bg-success">Attivo</span>
+              {% else %}
+                <span class="badge bg-danger">Non attivo</span>
+              {% endif %}
+              {% if automezzo.disponibile %}
+                <span class="badge bg-info">Disponibile</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Non disponibile</span>
+              {% endif %}
+            </dd>
+            <dt class="col-sm-4">Note:</dt>
+            <dd class="col-sm-8">{{ automezzo.note|default:"—" }}</dd>
+          </dl>
+        </div>
+        <div class="card-footer text-end">
+          <a href="{% url 'automezzi:automezzo_update' automezzo.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Modifica</a>
+          <a href="{% url 'automezzi:automezzo_delete' automezzo.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Elimina</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

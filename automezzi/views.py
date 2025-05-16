@@ -24,18 +24,18 @@ class AutomezzoCreateView(LoginRequiredMixin, CreateView):
     model = Automezzo
     form_class = AutomezzoForm
     template_name = "automezzi/automezzo_form.html"
-    success_url = reverse_lazy("automezzi:list")
+    success_url = reverse_lazy("automezzi:automezzo_list")
 
 class AutomezzoUpdateView(LoginRequiredMixin, UpdateView):
     model = Automezzo
     form_class = AutomezzoForm
     template_name = "automezzi/automezzo_form.html"
-    success_url = reverse_lazy("automezzi:list")
+    success_url = reverse_lazy("automezzi:automezzo_list")
 
 class AutomezzoDeleteView(LoginRequiredMixin, DeleteView):
     model = Automezzo
     template_name = "automezzi/automezzo_confirm_delete.html"
-    success_url = reverse_lazy("automezzi:list")
+    success_url = reverse_lazy("automezzi:automezzo_list")
 
 # MANUTENZIONI CRUD
 class ManutenzioneListView(LoginRequiredMixin, ListView):

@@ -1,23 +1,60 @@
 {% extends "base.html" %}
+{% block title %}Elenco Automezzi{% endblock %}
 {% block content %}
-<h1>Elenco Automezzi</h1>
-<a href="{% url 'automezzi:create' %}">Nuovo automezzo</a>
-<table>
-    <tr>
-        <th>Targa</th><th>Marca</th><th>Modello</th><th>Azioni</th>
-    </tr>
-    {% for auto in automezzi %}
-    <tr>
-        <td><a href="{% url 'automezzi:detail' auto.pk %}">{{ auto.targa }}</a></td>
-        <td>{{ auto.marca }}</td>
-        <td>{{ auto.modello }}</td>
-        <td>
-            <a href="{% url 'automezzi:update' auto.pk %}">Modifica</a> |
-            <a href="{% url 'automezzi:delete' auto.pk %}">Elimina</a>
-        </td>
-    </tr>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fas fa-car"></i> Elenco Automezzi</h2>
+    <a href="{% url 'automezzi:automezzo_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Nuovo automezzo
+    </a>
+  </div>
+  <div class="row">
+    {% for automezzo in automezzi %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold">{{ automezzo.targa }}</span>
+          {% if automezzo.attivo %}
+            <span class="badge bg-success">Attivo</span>
+          {% else %}
+            <span class="badge bg-danger">Non attivo</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ automezzo.marca }} {{ automezzo.modello }}</h5>
+          <p class="mb-2 text-muted">Anno: {{ automezzo.anno_immatricolazione }}</p>
+          <a href="{% url 'automezzi:automezzo_detail' automezzo.pk %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-eye"></i> Dettaglio
+          </a>
+          <a href="{% url 'automezzi:automezzo_update' automezzo.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-edit"></i> Modifica
+          </a>
+          <a href="{% url 'automezzi:automezzo_delete' automezzo.pk %}" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-trash"></i> Elimina
+          </a>
+        </div>
+      </div>
+    </div>
     {% empty %}
-    <tr><td colspan="4">Nessun automezzo trovato.</td></tr>
+    <div class="col-12"><div class="alert alert-warning">Nessun automezzo trovato.</div></div>
     {% endfor %}
-</table>
+  </div>
+  {% if is_paginated %}
+    <nav>
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+          </li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
 {% endblock %}

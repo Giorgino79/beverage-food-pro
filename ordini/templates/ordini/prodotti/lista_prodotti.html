@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>Lista Prodotti</h1>
+  <a href="{% url 'ordini:nuovo_prodotto' %}" class="btn btn-primary mb-3">Nuovo Prodotto</a>
+  {% if prodotti %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>EAN</th>
+          <th>Misura</th>
+          <th>Categoria</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prodotto in prodotti %}
+          <tr>
+            <td>{{ prodotto.nome_prodotto }}</td>
+            <td>{{ prodotto.ean }}</td>
+            <td>{{ prodotto.get_misura_display }}</td>
+            <td><img src="{{ prodotto.categoria.icona.url }}" alt="Icona di {{ prodotto.categoria.nome_categoria }}" style="max-height: 30px;"></td>
+            <td>
+              <a href="{% url 'ordini:modifica_prodotto' prodotto.pk %}" class="btn btn-sm btn-warning">Modifica</a>
+              <a href="{% url 'ordini:elimina_prodotto' prodotto.pk %}" class="btn btn-sm btn-danger">Elimina</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nessun prodotto disponibile.</p>
+  {% endif %}
+{% endblock %}
