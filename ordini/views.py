@@ -11,6 +11,26 @@ from django.core.mail import EmailMessage
 import datetime
 from django.contrib.auth.decorators import login_required
 
+from django.shortcuts import render
+from .models import Ordine, Prodotto, Magazzino
+
+def dashboard(request):
+    totale_ordini = Ordine.objects.count()
+    ordini_da_ricevere = Ordine.objects.filter(data_ricezione_ordine__isnull=True).count()
+    ordini_ricevuti = Ordine.objects.filter(data_ricezione_ordine__isnull=False).count()
+    totale_prodotti = Prodotto.objects.count()
+    prodotti_in_magazzino = Magazzino.objects.values('prodotto').distinct().count()
+    magazzino_basso = Magazzino.objects.filter(quantita_in_magazzino__lte=5)  # Soglia esempio
+
+    context = {
+        "totale_ordini": totale_ordini,
+        "ordini_da_ricevere": ordini_da_ricevere,
+        "ordini_ricevuti": ordini_ricevuti,
+        "totale_prodotti": totale_prodotti,
+        "prodotti_in_magazzino": prodotti_in_magazzino,
+        "magazzino_basso": magazzino_basso,
+    }
+    return render(request, "ordini/dashboard.html", context)
 
 def nuova_categoria(request):
     if request.method == 'POST':

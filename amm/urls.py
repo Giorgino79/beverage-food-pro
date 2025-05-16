@@ -36,7 +36,8 @@ urlpatterns = [
     
     path('anagrafica/', include('anagrafica.urls')),
     path('automezzi/', include('automezzi.urls')),
-    
+    path('ordini/', include('ordini.urls')),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),   
 ]
 
 # Servire i file media in development

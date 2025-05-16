@@ -4,6 +4,7 @@ from . import views
 app_name = 'ordini'  # Namespace per le URL dell'app
 
 urlpatterns = [
+    path('dashboard/', views.dashboard, name='dashboard'),
     # URL per Prodotto
     path('categoria/nuova/', views.nuova_categoria, name='nuova_categoria'),  # Nuova URL per la creazione
     path('categorie/', views.lista_categorie, name='lista_categorie'),

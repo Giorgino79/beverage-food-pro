@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard Ordini</h1>
+<div class="dashboard-cards">
+    <div class="card">
+        <h3>Totale Ordini</h3>
+        <p>{{ totale_ordini }}</p>
+    </div>
+    <div class="card">
+        <h3>Ordini da Ricevere</h3>
+        <p>{{ ordini_da_ricevere }}</p>
+    </div>
+    <div class="card">
+        <h3>Ordini Ricevuti</h3>
+        <p>{{ ordini_ricevuti }}</p>
+    </div>
+    <div class="card">
+        <h3>Totale Prodotti</h3>
+        <p>{{ totale_prodotti }}</p>
+    </div>
+    <div class="card">
+        <h3>Prodotti in Magazzino</h3>
+        <p>{{ prodotti_in_magazzino }}</p>
+    </div>
+</div>
+<h2>Prodotti con Magazzino Basso (&le; 5)</h2>
+<ul>
+    {% for voce in magazzino_basso %}
+        <li>{{ voce.prodotto.nome_prodotto }} - Qta: {{ voce.quantita_in_magazzino }}</li>
+    {% empty %}
+        <li>Nessun prodotto con magazzino basso.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

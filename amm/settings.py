@@ -56,8 +56,10 @@ INSTALLED_APPS = [
     'anagrafica',
     # 'magazzino',
     'automezzi',
-    # 'ordini',
+    'ordini',
     # 'vendite',
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
+    "channels",  # Necessario per websocket (interattività)
 ]
 
 AUTH_USER_MODEL = 'dipendenti.Dipendente'
