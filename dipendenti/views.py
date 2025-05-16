@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
@@ -18,6 +18,22 @@ from .forms import (
     DipendenteCreationForm, DipendenteChangeForm, AllegatoDipendenteForm,
     InizioGiornataForm, GiornataForm, MensilitaForm
 )
+
+@login_required
+def dashboard_dipendenti(request):
+    # Consenti solo a livello "totale" o superuser
+    if not (request.user.livello == Dipendente.Autorizzazioni.totale or request.user.is_superuser):
+        return HttpResponseForbidden("Non hai i permessi per accedere a questa pagina.")
+
+    dipendenti_count = Dipendente.objects.count()
+    attivi_count = Dipendente.objects.filter(is_active=True).count()
+    # Puoi aggiungere altre statistiche qui
+
+    context = {
+        "dipendenti_count": dipendenti_count,
+        "attivi_count": attivi_count,
+    }
+    return render(request, "dipendenti/dashboard.html", context)
 
 class StaffRequiredMixin(UserPassesTestMixin):
     """Mixin per verificare che l'utente sia staff"""

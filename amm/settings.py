@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'fontawesomefree',
     'anagrafica',
     # 'magazzino',
-    # 'automezzi',
+    'automezzi',
     # 'ordini',
     # 'vendite',
 ]
@@ -193,12 +193,9 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
-
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-
+ACCOUNT_LOGIN_METHODS = {'username'}
 LOGIN_URL = 'dipendenti:login'
 LOGIN_REDIRECT_URL = 'home:index'
 LOGOUT_REDIRECT_URL = 'home:landing_page'

@@ -7,7 +7,7 @@ urlpatterns = [
     # Autenticazione
     path('', views.entra, name='login'),
     path('esci/', views.esci, name='esci'),
-    
+    path('dashboard/', views.dashboard_dipendenti, name='dashboard'),
     # Gestione Dipendenti
     path('elenco/', views.DipendenteListView.as_view(), name='elencodipendenti'),
     path('nuovo/', views.DipendenteCreateView.as_view(), name='registradipendente'),
@@ -29,4 +29,5 @@ urlpatterns = [
     path('profilo/<str:username>/', views.profilo, name='profilo'),
     
     path('esci/', views.esci, name='esci'),
+    
 ]

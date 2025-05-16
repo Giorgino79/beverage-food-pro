@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dettaglio automezzo: {{ automezzo.targa }}</h1>
+<ul>
+    <li>Marca: {{ automezzo.marca }}</li>
+    <li>Modello: {{ automezzo.modello }}</li>
+    <li>Anno: {{ automezzo.anno_immatricolazione }}</li>
+    <li>Chilometri: {{ automezzo.chilometri_attuali }}</li>
+    <li>Attivo: {{ automezzo.attivo }}</li>
+    <li>Disponibile: {{ automezzo.disponibile }}</li>
+    <li>Bloccata: {{ automezzo.bloccata }}</li>
+    <li>Motivo blocco: {{ automezzo.motivo_blocco }}</li>
+    <li>Libretto fronte: {% if automezzo.libretto_fronte %}<a href="{{ automezzo.libretto_fronte.url }}">Scarica</a>{% endif %}</li>
+    <li>Libretto retro: {% if automezzo.libretto_retro %}<a href="{{ automezzo.libretto_retro.url }}">Scarica</a>{% endif %}</li>
+    <li>Assicurazione: {% if automezzo.assicurazione %}<a href="{{ automezzo.assicurazione.url }}">Scarica</a>{% endif %}</li>
+    <li>Data revisione: {{ automezzo.data_revisione }}</li>
+    <li>Assegnato a: {{ automezzo.assegnato_a }}</li>
+</ul>
+<a href="{% url 'automezzi:update' automezzo.pk %}">Modifica</a> |
+<a href="{% url 'automezzi:delete' automezzo.pk %}">Elimina</a> |
+<a href="{% url 'automezzi:manutenzione_list_automezzo' automezzo.pk %}">Manutenzioni</a> |
+<a href="{% url 'automezzi:rifornimento_list_automezzo' automezzo.pk %}">Rifornimenti</a> |
+<a href="{% url 'automezzi:evento_list_automezzo' automezzo.pk %}">Eventi</a>
+{% endblock %}

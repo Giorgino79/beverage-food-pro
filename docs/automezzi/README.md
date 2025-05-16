@@ -1,76 +1,126 @@
-# README – Appunti e Convenzioni Copilot per `automezzi`
+# Gestione Automezzi Django
 
-Questo file raccoglie i punti salienti, decisioni e best practice emerse dalle discussioni con Copilot e dallo sviluppo dell’app `automezzi`.
+Questa app Django permette la gestione di una flotta di automezzi aziendali, con anagrafiche, eventi, manutenzioni, rifornimenti e dashboard riassuntiva.
 
----
+## Struttura
 
-## 1. Convenzioni sui Template
-
-- Tutti i template delle manutenzioni si trovano in `templates/automezzi/manutenzioni/`.
-- Nomi template principali:
-  - `nuovo.html` — creazione manutenzione
-  - `modifica.html` — modifica manutenzione
-  - `elimina.html` — eliminazione manutenzione
-  - `dettaglio.html` — dettaglio manutenzione
-  - `elenco.html` — elenco manutenzioni per automezzo
-  - `elenco_globale.html` — elenco globale di tutte le manutenzioni
-  - `completa.html` — conferma completamento manutenzione
-- Nei template, usare `{% load humanize %}` per formattazioni numeriche e date.
-- Per i form utilizzare `crispy_forms` e Bootstrap per una migliore UX.
-
----
-
-## 2. App e Librerie Django
-
-- Aggiungere `'django.contrib.humanize'` a `INSTALLED_APPS` in `settings.py` per abilitare i filtri come `intcomma`, `floatformat`, ecc.
-- Non è necessario installare pacchetti esterni per i filtri humanize, fanno parte di Django.
-
----
-
-## 3. Gestione delle Discussioni Copilot
-
-- Copilot **non ha memoria persistente**: le discussioni non sono salvate tra una sessione e l’altra.
-- Soluzioni, template, scelte progettuali e appunti vanno salvati in file `.md` come questo, da tenere nella cartella dell’app (`docs/automezzi/`).
-- Consigliato nominare i file degli appunti secondo la data o l’argomento (es: `16052025.md`).
-
-**Esempio struttura:**
 ```
-docs/
-  automezzi/
-    README.md
-    16052025.md
-  altro_app/
-    data.md
+automezzi/
+├── __init__.py
+├── admin.py
+├── apps.py
+├── forms.py
+├── models.py
+├── tests.py
+├── urls.py
+├── views.py
+├── migrations/
+│   └── __init__.py
+├── templates/
+│   └── automezzi/
+│       ├── automezzo_list.html
+│       ├── automezzo_detail.html
+│       ├── automezzo_form.html
+│       ├── automezzo_confirm_delete.html
+│       ├── manutenzione_list.html
+│       ├── manutenzione_detail.html
+│       ├── manutenzione_form.html
+│       ├── manutenzione_confirm_delete.html
+│       ├── rifornimento_list.html
+│       ├── rifornimento_detail.html
+│       ├── rifornimento_form.html
+│       ├── rifornimento_confirm_delete.html
+│       ├── evento_list.html
+│       ├── evento_detail.html
+│       ├── evento_form.html
+│       ├── evento_confirm_delete.html
+│       └── dashboard.html
+└── static/
+    └── automezzi/
+        └── (js/css)
 ```
 
+## Funzionalità
+
+- **CRUD Automezzi**: anagrafica, libretto, assicurazione, assegnazione.
+- **CRUD Manutenzioni**: storico, allegati, stato.
+- **CRUD Rifornimenti**: storico, scontrini, km.
+- **CRUD Eventi**: incidenti, furti, fermi, allegati, coinvolgimento personale.
+- **Dashboard**: riepilogo rapido e ultimi movimenti.
+
+## Modelli principali
+
+- `Automezzo`
+- `Manutenzione`
+- `Rifornimento`
+- `EventoAutomezzo`
+
+## Views principali
+
+- Tutte le operazioni CRUD con Class Based Views.
+- Navigazione tramite URL RESTful.
+- Dashboard come TemplateView.
+
+## Esempio URL RESTful
+
+- `/automezzi/` – lista automezzi
+- `/automezzi/nuovo/` – nuovo automezzo
+- `/automezzi/23/` – dettaglio automezzo 23
+- `/automezzi/23/manutenzioni/` – manutenzioni automezzo 23
+- `/manutenzioni/` – tutte le manutenzioni
+- `/automezzi/23/eventi/` – eventi su automezzo 23
+- `/` – dashboard
+
+## Dipendenze consigliate
+
+- **Django** >= 3.2
+- **django-crispy-forms** (opzionale, per form Bootstrap)
+- **Bootstrap** (opzionale, per una UI più moderna)
+
+## Esempio di impostazione base per crispy-forms e Bootstrap
+
+Nel tuo `settings.py`:
+```python
+INSTALLED_APPS = [
+    ...
+    'crispy_forms',
+    'crispy_bootstrap5',  # o 'crispy_bootstrap4'
+]
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+```
+
+Nel tuo `base.html`:
+```html
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Gestione Automezzi</title>
+    <link rel="stylesheet" href="{% static 'automezzi/bootstrap.min.css' %}">
+</head>
+<body>
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+```
+
+Nei template dei form, sostituisci  
+`{{ form.as_p }}`  
+con  
+`{% crispy form %}`
+
+## Note per lo sviluppo
+
+- Ricorda di gestire `MEDIA_ROOT` e `MEDIA_URL` in settings.py per gli upload di file.
+- Personalizza le autorizzazioni secondo le tue esigenze (es: chi può modificare cosa).
+- Puoi estendere la dashboard con grafici (es. Chart.js) o filtri rapidi.
+
 ---
 
-## 4. Best Practice
-
-- Annotare in questo README (o in file giornalieri/tematici) soluzioni custom, scelte tecniche, workaround.
-- Aggiornare il file ogni volta che si stabilisce una nuova convenzione o si prende una decisione progettuale importante.
-
----
-
-## 5. Esempi Utili
-
-- **Formattazione costo:**
-  ```django
-  {{ manutenzione.costo|floatformat:2 }} €
-  ```
-- **Link a dettaglio automezzo:**
-  ```django
-  {% url 'automezzi:dettaglio' manutenzione.automezzo.pk %}?sezione=manutenzioni
-  ```
-- **Badge completamento:**
-  ```django
-  {% if manutenzione.completata %}
-    <span class="badge bg-success">Sì</span>
-  {% else %}
-    <span class="badge bg-warning text-dark">No</span>
-  {% endif %}
-  ```
-
----
-
-> _Mantieni aggiornato questo README e aggiungi note specifiche per non perdere memoria delle buone pratiche o delle decisioni prese!_
+> **Consiglio:**  
+> Se riscontri lentezza/timeout, apri pure una nuova sessione: i tuoi prompt e la cronologia sono nel tuo ambiente locale, non perderai i file già generati.

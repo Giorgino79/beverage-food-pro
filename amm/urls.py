@@ -35,7 +35,7 @@ urlpatterns = [
     path('__debug__/', include('debug_toolbar.urls')),
     
     path('anagrafica/', include('anagrafica.urls')),
-    # path('automezzi/', include('automezzi.urls')),
+    path('automezzi/', include('automezzi.urls')),
     
 ]
 

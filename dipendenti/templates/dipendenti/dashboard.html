@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Dipendenti{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1><i class="fas fa-users"></i> Dashboard Dipendenti</h1>
+    <div class="row my-4">
+        <div class="col-md-4">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Totale Dipendenti</h5>
+                    <p class="display-4">{{ dipendenti_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Dipendenti Attivi</h5>
+                    <p class="display-4">{{ attivi_count }}</p>
+                </div>
+            </div>
+        </div>
+        <!-- Puoi aggiungere altre card qui -->
+    </div>
+    <a href="{% url 'dipendenti:elencodipendenti' %}" class="btn btn-primary">
+        <i class="fas fa-list"></i> Elenco Dipendenti
+    </a>
+    <a href="{% url 'dipendenti:registradipendente' %}" class="btn btn-success ml-2">
+        <i class="fas fa-user-plus"></i> Nuovo Dipendente
+    </a>
+</div>
+{% endblock %}

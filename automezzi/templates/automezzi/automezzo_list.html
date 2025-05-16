@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Elenco Automezzi</h1>
+<a href="{% url 'automezzi:create' %}">Nuovo automezzo</a>
+<table>
+    <tr>
+        <th>Targa</th><th>Marca</th><th>Modello</th><th>Azioni</th>
+    </tr>
+    {% for auto in automezzi %}
+    <tr>
+        <td><a href="{% url 'automezzi:detail' auto.pk %}">{{ auto.targa }}</a></td>
+        <td>{{ auto.marca }}</td>
+        <td>{{ auto.modello }}</td>
+        <td>
+            <a href="{% url 'automezzi:update' auto.pk %}">Modifica</a> |
+            <a href="{% url 'automezzi:delete' auto.pk %}">Elimina</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">Nessun automezzo trovato.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}
