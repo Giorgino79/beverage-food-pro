@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Elenco Dipendenti{% endblock %}
+
+{% block page_title %}Elenco Dipendenti{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-users me-2"></i>Gestione Dipendenti</h6>
+        <div class="dropdown no-arrow">
+            <a href="{% url 'dipendenti:registradipendente' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-user-plus me-1"></i> Nuovo Dipendente
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Barra di ricerca -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="get" action="{% url 'dipendenti:elencodipendenti' %}" class="d-flex">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Cerca dipendenti..." value="{{ request.GET.q|default:'' }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabella Dipendenti -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTabelDipendenti" width="100%" cellspacing="0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Username</th>
+                        <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Email</th>
+                        <th>Livello</th>
+                        <th>Stato</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dipendente in dip %}
+                    <tr>
+                        <td>{{ dipendente.username }}</td>
+                        <td>{{ dipendente.first_name }}</td>
+                        <td>{{ dipendente.last_name }}</td>
+                        <td>{{ dipendente.email }}</td>
+                        <td>
+                            {% if dipendente.livello == 'totale' %}
+                            <span class="badge bg-danger">Amministratore</span>
+                            {% elif dipendente.livello == 'contabile' %}
+                            <span class="badge bg-info">Contabile</span>
+                            {% elif dipendente.livello == 'operativo' %}
+                            <span class="badge bg-success">Operativo</span>
+                            {% elif dipendente.livello == 'operatore' %}
+                            <span class="badge bg-secondary">Operatore</span>
+                            {% elif dipendente.livello == 'rappresentante' %}
+                            <span class="badge bg-warning">Rappresentante</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if dipendente.is_active %}
+                            <span class="badge bg-success">Attivo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Disattivato</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'dipendenti:vedidipendente' pk=dipendente.pk %}" class="btn btn-primary btn-sm" title="Visualizza">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'dipendenti:aggiornadipendente' pk=dipendente.pk %}" class="btn btn-warning btn-sm" title="Modifica">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <p class="text-muted">Nessun dipendente trovato</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inizializza DataTables per la tabella dipendenti
+    $(document).ready(function() {
+        $('#dataTabelDipendenti').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/it-IT.json',
+            },
+            responsive: true,
+            paging: true,
+            searching: false, // Usiamo la nostra barra di ricerca personalizzata
+            ordering: true,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tutti"]],
+        });
+    });
+</script>
+{% endblock %}

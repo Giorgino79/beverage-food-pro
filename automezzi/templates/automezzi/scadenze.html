@@ -1,0 +1,504 @@
+<!-- templates/automezzi/scadenze.html -->
+{% extends "automezzi/base_automezzi.html" %}
+{% load static %}
+
+{% block page_title %}Scadenze Documenti{% endblock %}
+{% block page_subtitle %}Monitoraggio scadenze documenti automezzi{% endblock %}
+
+{% block header_actions %}
+<div class="d-flex gap-2">
+    <button type="button" class="btn btn-outline-primary btn-automezzi" 
+            data-bs-toggle="modal" data-bs-target="#filtroModal">
+        <i class="fas fa-filter me-2"></i>Filtri
+    </button>
+    <div class="dropdown">
+        <button class="btn btn-outline-success btn-automezzi dropdown-toggle" 
+                type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-2"></i>Export
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'automezzi:export_scadenze' %}?format=csv">
+                <i class="fas fa-file-csv me-2"></i>CSV
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'automezzi:export_scadenze' %}?format=pdf">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'automezzi:export_scadenze' %}?format=excel">
+                <i class="fas fa-file-excel me-2"></i>Excel
+            </a></li>
+        </ul>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-outline-info btn-automezzi dropdown-toggle" 
+                type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-eye me-2"></i>Vista
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="?view=cards">
+                <i class="fas fa-th-large me-2"></i>Cards
+            </a></li>
+            <li><a class="dropdown-item" href="?view=table">
+                <i class="fas fa-table me-2"></i>Tabella
+            </a></li>
+            <li><a class="dropdown-item" href="?view=timeline">
+                <i class="fas fa-clock me-2"></i>Timeline
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-calendar-exclamation"></i> Scadenze
+</li>
+{% endblock %}
+
+{% block main_content %}
+<!-- Riepilogo scadenze -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon text-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">{{ riepilogo.scadute }}</div>
+            <div class="stat-label">Scadute</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon text-warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ riepilogo.entro_15_gg }}</div>
+            <div class="stat-label">Entro 15 giorni</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon text-info">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number">{{ riepilogo.entro_30_gg }}</div>
+            <div class="stat-label">Entro 30 giorni</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon text-success">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="stat-number">{{ riepilogo.oltre_30_gg }}</div>
+            <div class="stat-label">Oltre 30 giorni</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtri rapidi -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="sezione-dettaglio">
+            <div class="sezione-content">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="?status=scadute" 
+                       class="btn {% if request.GET.status == 'scadute' %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Scadute
+                    </a>
+                    <a href="?status=urgenti" 
+                       class="btn {% if request.GET.status == 'urgenti' %}btn-warning{% else %}btn-outline-warning{% endif %} btn-sm">
+                        <i class="fas fa-clock me-1"></i>Urgenti (15gg)
+                    </a>
+                    <a href="?status=prossime" 
+                       class="btn {% if request.GET.status == 'prossime' %}btn-info{% else %}btn-outline-info{% endif %} btn-sm">
+                        <i class="fas fa-calendar-check me-1"></i>Prossime (30gg)
+                    </a>
+                    <a href="?tipo=assicurazione" 
+                       class="btn {% if request.GET.tipo == 'assicurazione' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                        <i class="fas fa-shield-alt me-1"></i>Assicurazioni
+                    </a>
+                    <a href="?tipo=revisione" 
+                       class="btn {% if request.GET.tipo == 'revisione' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                        <i class="fas fa-tools me-1"></i>Revisioni
+                    </a>
+                    <a href="?tipo=bollo" 
+                       class="btn {% if request.GET.tipo == 'bollo' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                        <i class="fas fa-receipt me-1"></i>Bolli
+                    </a>
+                    <a href="?" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Pulisci Filtri
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenuto principale basato sulla vista -->
+{% if view_mode == 'cards' %}
+    {% include 'automezzi/includes/scadenze_cards.html' %}
+{% elif view_mode == 'timeline' %}
+    {% include 'automezzi/includes/scadenze_timeline.html' %}
+{% else %}
+    {% include 'automezzi/includes/scadenze_table.html' %}
+{% endif %}
+
+<!-- Modal filtri avanzati -->
+<div class="modal fade" id="filtroModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-filter me-2"></i>Filtri Avanzati
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="get" id="filtroForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Filtro automezzo -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_automezzo" class="form-label">Automezzo</label>
+                            <select class="form-select" name="automezzo" id="id_automezzo">
+                                <option value="">Tutti gli automezzi</option>
+                                {% for automezzo in automezzi_list %}
+                                <option value="{{ automezzo.pk }}" 
+                                        {% if request.GET.automezzo == automezzo.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ automezzo.targa }} - {{ automezzo.marca }} {{ automezzo.modello }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Filtro tipo documento -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_tipo" class="form-label">Tipo Documento</label>
+                            <select class="form-select" name="tipo" id="id_tipo">
+                                <option value="">Tutti i tipi</option>
+                                {% for tipo_value, tipo_label in tipi_documento %}
+                                <option value="{{ tipo_value }}" 
+                                        {% if request.GET.tipo == tipo_value %}selected{% endif %}>
+                                    {{ tipo_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Filtro giorni scadenza -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_giorni" class="form-label">Giorni alla Scadenza</label>
+                            <select class="form-select" name="giorni" id="id_giorni">
+                                <option value="">Tutti</option>
+                                <option value="-1" {% if request.GET.giorni == '-1' %}selected{% endif %}>
+                                    Già scadute
+                                </option>
+                                <option value="7" {% if request.GET.giorni == '7' %}selected{% endif %}>
+                                    Entro 7 giorni
+                                </option>
+                                <option value="15" {% if request.GET.giorni == '15' %}selected{% endif %}>
+                                    Entro 15 giorni
+                                </option>
+                                <option value="30" {% if request.GET.giorni == '30' %}selected{% endif %}>
+                                    Entro 30 giorni
+                                </option>
+                                <option value="60" {% if request.GET.giorni == '60' %}selected{% endif %}>
+                                    Entro 60 giorni
+                                </option>
+                                <option value="90" {% if request.GET.giorni == '90' %}selected{% endif %}>
+                                    Entro 90 giorni
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro data scadenza -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_data_da" class="form-label">Scadenza dal</label>
+                            <input type="date" class="form-control" name="data_da" id="id_data_da" 
+                                   value="{{ request.GET.data_da }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="id_data_a" class="form-label">Scadenza al</label>
+                            <input type="date" class="form-control" name="data_a" id="id_data_a" 
+                                   value="{{ request.GET.data_a }}">
+                        </div>
+
+                        <!-- Ricerca testo -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_search" class="form-label">Ricerca Testo</label>
+                            <input type="text" class="form-control" name="search" id="id_search" 
+                                   value="{{ request.GET.search }}" 
+                                   placeholder="Targa, numero documento...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Chiudi
+                    </button>
+                    <button type="button" class="btn btn-outline-warning" onclick="resetFilters()">
+                        <i class="fas fa-undo me-2"></i>Reset
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Applica Filtri
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal rinnovo documento -->
+<div class="modal fade" id="rinnovoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync me-2"></i>Rinnova Documento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="rinnovoForm">
+                    <!-- Contenuto caricato via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button per notifiche -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+    <div id="notifiche-container"></div>
+</div>
+{% endblock %}
+
+{% block automezzi_js %}
+<script>
+$(document).ready(function() {
+    // Inizializza Select2 per automezzi
+    $('#id_automezzo').select2({
+        placeholder: 'Seleziona automezzo...',
+        allowClear: true,
+        dropdownParent: $('#filtroModal')
+    });
+    
+    // Auto-refresh ogni 30 secondi
+    setInterval(function() {
+        if (!$('.modal').hasClass('show')) {
+            aggiornaSommario();
+        }
+    }, 30000);
+    
+    // Gestione rinnovo documento
+    $('.btn-rinnova').on('click', function(e) {
+        e.preventDefault();
+        var documentoId = $(this).data('documento-id');
+        caricaFormRinnovo(documentoId);
+    });
+    
+    // Notifiche browser per scadenze urgenti
+    if ('Notification' in window && Notification.permission === 'granted') {
+        verificaScadenzeUrgenti();
+    } else if ('Notification' in window && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                verificaScadenzeUrgenti();
+            }
+        });
+    }
+    
+    // Evidenzia documenti in base ai giorni rimanenti
+    $('.scadenza-item').each(function() {
+        var giorni = parseInt($(this).data('giorni-rimanenti'));
+        if (giorni < 0) {
+            $(this).addClass('border-danger bg-danger-subtle');
+        } else if (giorni <= 15) {
+            $(this).addClass('border-warning bg-warning-subtle');
+        } else if (giorni <= 30) {
+            $(this).addClass('border-info bg-info-subtle');
+        }
+    });
+    
+    // Calendario highlight
+    $('#id_data_da, #id_data_a').on('change', function() {
+        var dataDa = $('#id_data_da').val();
+        var dataA = $('#id_data_a').val();
+        
+        // Validazione range date
+        if (dataDa && dataA && dataDa > dataA) {
+            alert('La data "dal" non può essere successiva alla data "al"');
+            $(this).val('');
+        }
+    });
+    
+    // Tooltip per info aggiuntive
+    $('[data-bs-toggle="tooltip"]').tooltip();
+    
+    // Print scadenze
+    $('#btnPrint').on('click', function() {
+        window.print();
+    });
+    
+    // Bulk actions
+    $('#selectAll').on('change', function() {
+        $('.document-checkbox').prop('checked', $(this).prop('checked'));
+        aggiornaAzioniBulk();
+    });
+    
+    $('.document-checkbox').on('change', function() {
+        aggiornaAzioniBulk();
+    });
+});
+
+function resetFilters() {
+    $('#filtroForm')[0].reset();
+    $('#id_automezzo').val(null).trigger('change');
+}
+
+function aggiornaSommario() {
+    $.get('{% url "automezzi:api_scadenze_sommario" %}')
+    .done(function(data) {
+        // Aggiorna contatori
+        $('.stat-number').each(function(index) {
+            var keys = ['scadute', 'entro_15_gg', 'entro_30_gg', 'oltre_30_gg'];
+            $(this).text(data[keys[index]] || 0);
+        });
+        
+        // Mostra notifica se ci sono nuove scadenze urgenti
+        if (data.nuove_urgenti > 0) {
+            mostraNotificaScadenza(data.nuove_urgenti);
+        }
+    });
+}
+
+function caricaFormRinnovo(documentoId) {
+    $('#rinnovoForm').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Caricamento...</div>');
+    $('#rinnovoModal').modal('show');
+    
+    $.get(`{% url "automezzi:api_rinnova_documento" 0 %}`.replace('0', documentoId))
+    .done(function(data) {
+        $('#rinnovoForm').html(data.form_html);
+        
+        // Inizializza form elements
+        $('#id_data_rilascio, #id_data_scadenza').attr('type', 'date');
+        
+        // Submit handler
+        $('#formRinnovo').on('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        $('#rinnovoModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Errore: ' + response.error);
+                    }
+                },
+                error: function() {
+                    alert('Errore durante il rinnovo');
+                }
+            });
+        });
+    })
+    .fail(function() {
+        $('#rinnovoForm').html('<div class="alert alert-danger">Errore caricamento form</div>');
+    });
+}
+
+function verificaScadenzeUrgenti() {
+    $.get('{% url "automezzi:api_scadenze_urgenti" %}')
+    .done(function(data) {
+        if (data.urgenti > 0) {
+            var notification = new Notification('Scadenze Urgenti!', {
+                body: `Ci sono ${data.urgenti} documenti in scadenza entro 15 giorni`,
+                icon: '{% static "automezzi/images/warning-icon.png" %}',
+                badge: '{% static "automezzi/images/badge-icon.png" %}'
+            });
+            
+            notification.onclick = function() {
+                window.focus();
+                window.location.href = '{% url "automezzi:scadenze" %}?status=urgenti';
+            };
+        }
+    });
+}
+
+function mostraNotificaScadenza(numero) {
+    var notifica = $(`
+        <div class="toast" role="alert" data-bs-autohide="true" data-bs-delay="5000">
+            <div class="toast-header bg-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong class="me-auto">Nuove Scadenze</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                Rilevate ${numero} nuove scadenze urgenti!
+                <a href="?status=urgenti" class="btn btn-sm btn-warning mt-2">Visualizza</a>
+            </div>
+        </div>
+    `);
+    
+    $('#notifiche-container').append(notifica);
+    new bootstrap.Toast(notifica[0]).show();
+}
+
+function aggiornaAzioniBulk() {
+    var checked = $('.document-checkbox:checked').length;
+    if (checked > 0) {
+        $('#bulkActions').removeClass('d-none');
+        $('#bulkCount').text(checked);
+    } else {
+        $('#bulkActions').addClass('d-none');
+    }
+}
+
+function eseguiAzioneBulk(azione) {
+    var ids = $('.document-checkbox:checked').map(function() {
+        return $(this).val();
+    }).get();
+    
+    if (ids.length === 0) {
+        alert('Seleziona almeno un documento');
+        return;
+    }
+    
+    if (confirm(`Sei sicuro di voler ${azione} ${ids.length} documenti?`)) {
+        $.post(`{% url "automezzi:api_bulk_action" %}`, {
+            'action': azione,
+            'ids': ids,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        })
+        .done(function(data) {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Errore: ' + data.error);
+            }
+        });
+    }
+}
+
+// Print styles
+if (window.matchMedia) {
+    var mediaQueryList = window.matchMedia('print');
+    mediaQueryList.addListener(function(mql) {
+        if (mql.matches) {
+            // Prima di stampare
+            $('.btn, .modal, .toast').hide();
+        } else {
+            // Dopo la stampa
+            $('.btn').show();
+        }
+    });
+}
+</script>
+{% endblock %}

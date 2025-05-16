@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Elenco Fornitori{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-truck me-2"></i>Elenco Fornitori
+                        </h4>
+                        <a href="{% url 'anagrafica:nuovo_fornitore' %}" class="btn btn-dark">
+                            <i class="fas fa-plus me-2"></i>Nuovo Fornitore
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Barra di ricerca e filtri -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <form method="GET" class="d-flex">
+                                <input type="text" name="search" 
+                                       class="form-control" 
+                                       placeholder="Cerca per nome, email, telefono..." 
+                                       value="{{ search_query }}"
+                                       id="searchInput">
+                                <button type="submit" class="btn btn-outline-warning ms-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if search_query %}
+                                    <a href="{% url 'anagrafica:elenco_fornitori' %}" class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'anagrafica:export_anagrafica' %}?tipo=fornitori" 
+                                   class="btn btn-outline-success">
+                                    <i class="fas fa-download me-2"></i>Export CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if search_query %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Risultati per: <strong>"{{ search_query }}"</strong>
+                            ({{ fornitori|length }} trovati)
+                        </div>
+                    {% endif %}
+
+                    <!-- Statistiche rapide -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-warning">{{ page_obj.paginator.count }}</h5>
+                                    <small class="text-muted">Totale Fornitori</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-success">--</h5>
+                                    <small class="text-muted">Attivi</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabella fornitori -->
+                    {% if fornitori %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th>Nome/Ragione Sociale</th>
+                                        <th>Categoria</th>
+                                        <th>Contatti</th>
+                                        <th>Dati Fiscali</th>
+                                        <th>Pagamento</th>
+                                        <th>Stato</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fornitore in fornitori %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-truck text-dark"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ fornitore.nome }}</h6>
+                                                        {% if fornitore.referente_nome %}
+                                                            <small class="text-muted">Ref: {{ fornitore.referente_nome }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ fornitore.get_categoria_display }}</span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <i class="fas fa-phone text-success me-1"></i>
+                                                    <small>{{ fornitore.telefono }}</small>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-envelope text-warning me-1"></i>
+                                                    <small>{{ fornitore.email }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div><small><strong>P.IVA:</strong> {{ fornitore.partita_iva }}</small></div>
+                                                {% if fornitore.codice_fiscale %}
+                                                    <div><small><strong>CF:</strong> {{ fornitore.codice_fiscale }}</small></div>
+                                                {% endif %}
+                                                {% if fornitore.iban %}
+                                                    <div><small><i class="fas fa-credit-card text-primary me-1"></i>IBAN disponibile</small></div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ fornitore.get_tipo_pagamento_display }}</span>
+                                            </td>
+                                            <td>
+                                                {% if fornitore.attivo %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Attivo
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Inattivo
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'anagrafica:dettaglio_fornitore' fornitore.pk %}" 
+                                                       class="btn btn-outline-info" 
+                                                       title="Visualizza">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'anagrafica:modifica_fornitore' fornitore.pk %}" 
+                                                       class="btn btn-outline-warning" 
+                                                       title="Modifica">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {% if user.is_staff %}
+                                                        <a href="{% url 'anagrafica:toggle_attivo' 'fornitore' fornitore.pk %}" 
+                                                           class="btn btn-outline-{% if fornitore.attivo %}danger{% else %}success{% endif %}" 
+                                                           title="{% if fornitore.attivo %}Disattiva{% else %}Attiva{% endif %}"
+                                                           onclick="return confirm('Sei sicuro di voler {% if fornitore.attivo %}disattivare{% else %}attivare{% endif %} questo fornitore?')">
+                                                            <i class="fas fa-{% if fornitore.attivo %}pause{% else %}play{% endif %}"></i>
+                                                        </a>
+                                                        <a href="{% url 'anagrafica:elimina_fornitore' fornitore.pk %}" 
+                                                           class="btn btn-outline-danger" 
+                                                           title="Elimina"
+                                                           onclick="return confirm('Sei sicuro di voler eliminare questo fornitore? Questa azione non può essere annullata.')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginazione -->
+                        {% if page_obj.paginator.num_pages > 1 %}
+                            <nav aria-label="Paginazione fornitori">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-double-left"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if num == page_obj.number %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-right"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-double-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            {% if search_query %}
+                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Nessun fornitore trovato</h4>
+                                <p class="text-muted">Non ci sono fornitori che corrispondono ai criteri di ricerca.</p>
+                                <a href="{% url 'anagrafica:elenco_fornitori' %}" class="btn btn-outline-warning">
+                                    <i class="fas fa-arrow-left me-2"></i>Visualizza tutti i fornitori
+                                </a>
+                            {% else %}
+                                <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Nessun fornitore presente</h4>
+                                <p class="text-muted">Inizia aggiungendo il primo fornitore al sistema.</p>
+                                <a href="{% url 'anagrafica:nuovo_fornitore' %}" class="btn btn-warning">
+                                    <i class="fas fa-plus me-2"></i>Aggiungi Primo Fornitore
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus automatico sulla barra di ricerca
+    document.getElementById('searchInput').focus();
+    
+    // Evidenzia il testo di ricerca nei risultati
+    const searchQuery = "{{ search_query }}";
+    if (searchQuery) {
+        highlightSearchResults(searchQuery);
+    }
+    
+    function highlightSearchResults(query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        const cells = document.querySelectorAll('tbody td');
+        
+        cells.forEach(cell => {
+            if (cell.textContent.toLowerCase().includes(query.toLowerCase())) {
+                cell.innerHTML = cell.innerHTML.replace(regex, '<mark>$1</mark>');
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table-warning th {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.pagination {
+    margin-top: 2rem;
+}
+
+.page-link {
+    color: #ffc107;
+    border-radius: 6px !important;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+}
+
+.page-item.active .page-link {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-group .btn {
+    border-radius: 4px;
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+mark {
+    background-color: #fff3cd;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+.card.bg-light .card-body {
+    padding: 1rem;
+}
+
+.card.bg-light h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

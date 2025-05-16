@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Accesso al Sistema{% endblock title %}
+
+{% block page_title %}Accesso al Sistema{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Accedi</h4>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Errore!</strong> Nome utente o password non validi. Riprova.
+                </div>
+                {% endif %}
+                
+                <form method="post" class="login-form">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nome utente</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Accedi
+                        </button>
+                    </div>
+                    
+                    <!-- Aggiungi un campo hidden per il next se necessario -->
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+                </form>
+
+                <div class="mt-3 text-center">
+                    <a href="#">Password dimenticata?</a>
+                </div>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>
+                    Per problemi di accesso, contatta l'amministratore del sistema
+                </small>
+            </div>
+        </div>
+        
+        <!-- Logo o immagine decorativa -->
+        <div class="text-center mt-4">
+            <img src="{% static 'bef.png' %}" alt="Logo" height="80" class="img-fluid">
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    // Auto-focus sul campo username quando la pagina si carica
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('username').focus();
+    });
+</script>
+{% endblock javascripts %}

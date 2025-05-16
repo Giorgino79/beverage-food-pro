@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Elimina Fornitore - {{ fornitore.nome }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Conferma Eliminazione
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-trash fa-2x text-white"></i>
+                        </div>
+                        <h5 class="text-danger">Attenzione!</h5>
+                        <p class="text-muted">Questa operazione non può essere annullata.</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-info-circle me-2"></i>Stai per eliminare il seguente fornitore:</h6>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Nome/Ragione Sociale:</strong><br>
+                                <span class="text-warning">{{ fornitore.nome }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Email:</strong><br>
+                                {{ fornitore.email }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Telefono:</strong><br>
+                                {{ fornitore.telefono }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Categoria:</strong><br>
+                                {{ fornitore.get_categoria_display }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>P.IVA:</strong><br>
+                                {{ fornitore.partita_iva }}
+                            </div>
+                            {% if fornitore.codice_fiscale %}
+                            <div class="col-md-6">
+                                <strong>CF:</strong><br>
+                                {{ fornitore.codice_fiscale }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if fornitore.iban %}
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>IBAN:</strong><br>
+                                {{ fornitore.iban }}
+                            </div>
+                            {% if fornitore.referente_nome %}
+                            <div class="col-md-6">
+                                <strong>Referente:</strong><br>
+                                {{ fornitore.referente_nome }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-exclamation-triangle me-2"></i>Conseguenze dell'eliminazione:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Tutti i dati del fornitore verranno eliminati definitivamente</li>
+                            <li>Le relazioni con ordini e fatture (se presenti) potrebbero essere compromesse</li>
+                            <li>I dati bancari (IBAN) verranno persi definitivamente</li>
+                            <li>L'operazione non può essere annullata</li>
+                        </ul>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'anagrafica:dettaglio_fornitore' fornitore.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Annulla
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Conferma Eliminazione
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus sul pulsante Annulla per sicurezza
+    document.querySelector('.btn-outline-secondary').focus();
+    
+    // Conferma aggiuntiva prima dell'invio
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const confirmed = confirm('Sei assolutamente sicuro di voler eliminare questo fornitore?\n\nQuesta azione NON PUÒ essere annullata!');
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+.card {
+    border-radius: 8px;
+    border: none;
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 6px;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

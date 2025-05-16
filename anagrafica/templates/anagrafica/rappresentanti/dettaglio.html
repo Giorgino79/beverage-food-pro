@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ rappresentante }} - Dettagli Rappresentante{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header con azioni -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-user-tie me-2 text-success"></i>{{ rappresentante }}
+                    </h2>
+                    <p class="text-muted mb-0">
+                        <small>
+                            <i class="fas fa-calendar me-1"></i>Creato il {{ rappresentante.created_at|date:"d/m/Y" }}
+                            {% if rappresentante.updated_at != rappresentante.created_at %}
+                                - Aggiornato il {{ rappresentante.updated_at|date:"d/m/Y" }}
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'anagrafica:elenco_rappresentanti' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
+                    </a>
+                    <a href="{% url 'anagrafica:modifica_rappresentante' rappresentante.pk %}" class="btn btn-success">
+                        <i class="fas fa-edit me-2"></i>Modifica
+                    </a>
+                    {% if user.is_staff %}
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog me-2"></i>Azioni
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'anagrafica:toggle_attivo' 'rappresentante' rappresentante.pk %}"
+                                       onclick="return confirm('Sei sicuro di voler {% if rappresentante.attivo %}disattivare{% else %}attivare{% endif %} questo rappresentante?')">
+                                        <i class="fas fa-{% if rappresentante.attivo %}pause{% else %}play{% endif %} me-2"></i>
+                                        {% if rappresentante.attivo %}Disattiva{% else %}Attiva{% endif %} Rappresentante
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'anagrafica:elimina_rappresentante' rappresentante.pk %}"
+                                       onclick="return confirm('Sei sicuro di voler eliminare questo rappresentante? Questa azione non può essere annullata.')">
+                                        <i class="fas fa-trash me-2"></i>Elimina Rappresentante
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Colonna principale -->
+                <div class="col-md-8">
+                    <!-- Informazioni dipendente collegato -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Dipendente Collegato
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="fas fa-user fa-2x text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">{{ rappresentante.dipendente.get_full_name|default:rappresentante.dipendente.username }}</h5>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-envelope me-2"></i>{{ rappresentante.dipendente.email|default:'N/A' }}
+                                            </p>
+                                            <p class="text-muted mb-0">
+                                                <i class="fas fa-user-tag me-2"></i>{{ rappresentante.dipendente.get_livello_display|default:'N/A' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <a href="{% url 'dipendenti:vedidipendente' rappresentante.dipendente.pk %}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-2"></i>Vedi Dipendente
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informazioni generali rappresentante -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informazioni Rappresentante
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        {% if rappresentante.nome or rappresentante.cognome %}
+                                        <tr>
+                                            <td class="fw-semibold">Nome/Cognome:</td>
+                                            <td>{{ rappresentante.nome|default:'' }} {{ rappresentante.cognome|default:'' }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if rappresentante.zona_competenza %}
+                                        <tr>
+                                            <td class="fw-semibold">Zona di Competenza:</td>
+                                            <td><span class="badge bg-info fs-6">{{ rappresentante.zona_competenza }}</span></td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <td class="fw-semibold">Percentuale Provvigione:</td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark fs-6">{{ rappresentante.percentuale_provvigione }}%</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if rappresentante.indirizzo %}
+                                    <h6 class="text-muted mb-2">Indirizzo</h6>
+                                    <address class="mb-0">
+                                        {{ rappresentante.indirizzo|linebreaks }}
+                                        {% if rappresentante.citta or rappresentante.cap %}
+                                            <br>{{ rappresentante.citta|default:'' }}{% if rappresentante.cap and rappresentante.citta %}, {% endif %}{{ rappresentante.cap|default:'' }}
+                                        {% endif %}
+                                    </address>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dati fiscali -->
+                    {% if rappresentante.partita_iva or rappresentante.codice_fiscale %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-invoice me-2"></i>Dati Fiscali
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {% if rappresentante.partita_iva %}
+                                    <div class="mb-3">
+                                        <span class="fw-semibold text-muted">Partita IVA</span><br>
+                                        <code class="text-primary fs-6">{{ rappresentante.partita_iva }}</code>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {% if rappresentante.codice_fiscale %}
+                                    <div class="mb-3">
+                                        <span class="fw-semibold text-muted">Codice Fiscale</span><br>
+                                        <code class="text-success fs-6">{{ rappresentante.codice_fiscale }}</code>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Clienti assegnati -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>Clienti Assegnati
+                                </h5>
+                                <span class="badge bg-light text-dark">{{ rappresentante.clienti.count }} clienti</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if rappresentante.clienti.exists %}
+                                <div class="row">
+                                    {% for cliente in clienti %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body py-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1">{{ cliente.nome }}</h6>
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-envelope me-1"></i>{{ cliente.email }}
+                                                            </small>
+                                                        </div>
+                                                        <a href="{% url 'anagrafica:dettaglio_cliente' cliente.pk %}" 
+                                                           class="btn btn-sm btn-outline-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {% if rappresentante.clienti.count > 10 %}
+                                    <div class="text-center mt-3">
+                                        <a href="{% url 'anagrafica:elenco_clienti' %}?rappresentante={{ rappresentante.pk }}" 
+                                           class="btn btn-outline-info">
+                                            <i class="fas fa-list me-2"></i>Vedi tutti i clienti ({{ rappresentante.clienti.count }})
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">Nessun cliente assegnato</h6>
+                                    <p class="text-muted">Questo rappresentante non ha ancora clienti assegnati.</p>
+                                    <a href="{% url 'anagrafica:nuovo_cliente' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Aggiungi Cliente
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Note -->
+                    {% if rappresentante.note %}
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>Note
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ rappresentante.note|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Stato e Badge -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                {% if rappresentante.attivo %}
+                                    <span class="badge bg-success fs-6 px-3 py-2">
+                                        <i class="fas fa-check-circle me-2"></i>Rappresentante Attivo
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6 px-3 py-2">
+                                        <i class="fas fa-times-circle me-2"></i>Rappresentante Inattivo
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contatti -->
+                    {% if rappresentante.telefono or rappresentante.email %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-address-book me-2"></i>Contatti
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if rappresentante.telefono %}
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-phone text-success me-3"></i>
+                                    <div>
+                                        <span class="fw-semibold">Telefono</span><br>
+                                        <a href="tel:{{ rappresentante.telefono }}" class="text-decoration-none">
+                                            {{ rappresentante.telefono }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if rappresentante.email %}
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-envelope text-success me-3"></i>
+                                    <div>
+                                        <span class="fw-semibold">Email</span><br>
+                                        <a href="mailto:{{ rappresentante.email }}" class="text-decoration-none">
+                                            {{ rappresentante.email }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Statistiche rapide -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiche
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-1">{{ rappresentante.clienti.count }}</h4>
+                                        <small class="text-muted">Clienti<br>Totali</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success mb-1">{{ rappresentante.clienti.filter.attivo=True.count }}</h4>
+                                    <small class="text-muted">Clienti<br>Attivi</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Azioni Rapide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if rappresentante.email %}
+                                    <a href="mailto:{{ rappresentante.email }}" class="btn btn-outline-success">
+                                        <i class="fas fa-envelope me-2"></i>Invia Email
+                                    </a>
+                                {% endif %}
+                                {% if rappresentante.telefono %}
+                                    <a href="tel:{{ rappresentante.telefono }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-phone me-2"></i>Chiama
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'anagrafica:nuovo_cliente' %}?rappresentante={{ rappresentante.pk }}" 
+                                   class="btn btn-outline-info">
+                                    <i class="fas fa-user-plus me-2"></i>Aggiungi Cliente
+                                </a>
+                                <a href="{% url 'anagrafica:elenco_clienti' %}?rappresentante={{ rappresentante.pk }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-list me-2"></i>Vedi Tutti i Clienti
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header h5 {
+    font-weight: 600;
+}
+
+.table-borderless td {
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.table-borderless .fw-semibold {
+    color: #495057;
+    min-width: 120px;
+    vertical-align: top;
+}
+
+code {
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.badge.fs-6 {
+    font-size: 1rem !important;
+}
+
+.dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-group .btn {
+    border-radius: 6px;
+    margin-right: 0.5rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+address {
+    margin-bottom: 0;
+    font-style: normal;
+    line-height: 1.6;
+}
+
+.card.bg-light {
+    border: 1px solid #e9ecef;
+}
+
+.border-end {
+    border-right: 1px solid #dee2e6 !important;
+}
+</style>
+{% endblock %}

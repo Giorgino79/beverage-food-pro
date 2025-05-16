@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Promemoria - Sistema Gestionale{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Intestazione e pulsanti di azione -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-tasks me-2"></i> Promemoria
+        </h1>
+        <div class="btn-toolbar">
+            <div class="btn-group me-2">
+                <a href="{% url 'home:promemoria_list' %}" class="btn btn-outline-primary {% if not stato_attuale %}active{% endif %}">
+                    <i class="fas fa-list me-1"></i> Tutti
+                </a>
+                <a href="{% url 'home:promemoria_list' %}?stato=attivi" class="btn btn-outline-primary {% if stato_attuale == 'attivi' %}active{% endif %}">
+                    <i class="fas fa-clock me-1"></i> Da fare
+                </a>
+                <a href="{% url 'home:promemoria_list' %}?stato=completati" class="btn btn-outline-primary {% if stato_attuale == 'completati' %}active{% endif %}">
+                    <i class="fas fa-check-circle me-1"></i> Completati
+                </a>
+            </div>
+            <a href="{% url 'home:promemoria_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Nuovo promemoria
+            </a>
+        </div>
+    </div>
+
+    <!-- Contenitore drag and drop per promemoria -->
+    <div class="row promemoria-container">
+        <!-- Promemoria da fare -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clipboard-list me-1"></i> Da fare
+                    </h6>
+                    <span class="badge bg-primary rounded-pill">
+                        {{ promemoria_attivi|length }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group promemoria-da-fare" id="promemoria-attivi">
+                        {% for item in promemoria %}
+                            {% if not item.completato %}
+                                <li class="list-group-item list-group-item-action promemoria-item d-flex align-items-center" 
+                                    data-id="{{ item.id }}">
+                                    <div class="drag-handle me-2 text-muted">
+                                        <i class="fas fa-grip-vertical"></i>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" 
+                                               id="check-{{ item.id }}" data-id="{{ item.id }}">
+                                    </div>
+                                    <div class="ms-2 flex-grow-1">
+                                        <h6 class="mb-1">{{ item.titolo }}</h6>
+                                        <p class="mb-1 small text-muted">{{ item.descrizione|truncatechars:100 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="small text-muted">
+                                                {% if item.data_scadenza %}
+                                                    <span class="me-2 {% if item.is_overdue %}text-danger{% endif %}">
+                                                        <i class="far fa-calendar-alt me-1"></i> 
+                                                        Scadenza: {{ item.data_scadenza|date:"d/m/Y" }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="small text-muted">
+                                                <span class="badge {% if item.assegnato_a == user %}bg-info{% else %}bg-secondary{% endif %} rounded-pill">
+                                                    <i class="far fa-user me-1"></i> 
+                                                    {{ item.assegnato_a.get_full_name|default:item.assegnato_a.username }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-2 btn-group">
+                                        <a href="{% url 'home:promemoria_toggle' pk=item.pk %}?next={{ request.path }}" 
+                                           class="btn btn-sm btn-success toggle-completed" title="Completa">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'home:promemoria_update' pk=item.pk %}" 
+                                           class="btn btn-sm btn-info" title="Modifica">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'home:promemoria_delete' pk=item.pk %}" 
+                                           class="btn btn-sm btn-danger" title="Elimina">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% empty %}
+                            <li class="list-group-item text-center py-4">
+                                <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">Non hai promemoria da completare</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promemoria completati -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-check-double me-1"></i> Completati
+                    </h6>
+                    <span class="badge bg-success rounded-pill">
+                        {{ promemoria_completati|length }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group promemoria-completati" id="promemoria-completati">
+                        {% for item in promemoria %}
+                            {% if item.completato %}
+                                <li class="list-group-item list-group-item-action promemoria-item promemoria-completato d-flex align-items-center bg-light"
+                                    data-id="{{ item.id }}">
+                                    <div class="drag-handle me-2 text-muted">
+                                        <i class="fas fa-grip-vertical"></i>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" checked 
+                                               id="check-{{ item.id }}" data-id="{{ item.id }}">
+                                    </div>
+                                    <div class="ms-2 flex-grow-1">
+                                        <h6 class="mb-1 text-muted text-decoration-line-through">{{ item.titolo }}</h6>
+                                        <p class="mb-1 small text-muted">{{ item.descrizione|truncatechars:100 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="small text-muted">
+                                                <i class="far fa-check-circle me-1"></i> 
+                                                Completato: {{ item.data_completamento|date:"d/m/Y H:i" }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                <span class="badge bg-secondary rounded-pill">
+                                                    <i class="far fa-user me-1"></i> 
+                                                    {{ item.assegnato_a.get_full_name|default:item.assegnato_a.username }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-2 btn-group">
+                                        <a href="{% url 'home:promemoria_toggle' pk=item.pk %}?next={{ request.path }}" 
+                                           class="btn btn-sm btn-outline-success toggle-completed" title="Riapri">
+                                            <i class="fas fa-redo"></i>
+                                        </a>
+                                        <a href="{% url 'home:promemoria_update' pk=item.pk %}" 
+                                           class="btn btn-sm btn-info" title="Modifica">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'home:promemoria_delete' pk=item.pk %}" 
+                                           class="btn btn-sm btn-danger" title="Elimina">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% empty %}
+                            <li class="list-group-item text-center py-4">
+                                <i class="fas fa-clipboard-list text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">Nessun promemoria completato</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stili specifici per i promemoria -->
+<style>
+    .promemoria-item {
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+    }
+    
+    .promemoria-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+        transform: translateY(-2px);
+        z-index: 1;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .promemoria-item.promemoria-completato {
+        opacity: 0.8;
+    }
+    
+    .promemoria-item.promemoria-completato:hover {
+        opacity: 1;
+    }
+    
+    .drag-handle {
+        cursor: grab;
+    }
+    
+    .promemoria-ghost {
+        opacity: 0.5;
+        background: #f8f9fa;
+    }
+    
+    .promemoria-chosen {
+        background-color: #e9ecef;
+    }
+    
+    .promemoria-da-fare .promemoria-item {
+        border-left-color: var(--primary-color);
+    }
+    
+    .promemoria-completati .promemoria-item {
+        border-left-color: var(--success-color);
+    }
+    
+    .promemoria-item.is-overdue {
+        border-left-color: var(--danger-color);
+    }
+    
+    .list-group {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inizializza il gestore dei promemoria con drag and drop
+    const promemoriaManager = new PromemoriaManager({
+        containerSelector: '.promemoria-container',
+        itemSelector: '.promemoria-item',
+        completedContainerSelector: '#promemoria-completati',
+        pendingContainerSelector: '#promemoria-attivi',
+        completedClassName: 'promemoria-completato',
+        dragHandleSelector: '.drag-handle',
+        toggleCompletedUrl: '{% url "home:promemoria_toggle" pk=0 %}'.replace('/0/', '/')
+    });
+    
+    // Gestione delle checkbox
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const id = this.dataset.id;
+            if (id) {
+                // Redirect al toggle URL
+                window.location.href = `{% url 'home:promemoria_toggle' pk=0 %}?next={{ request.path }}`.replace('/0/', `/${id}/`);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

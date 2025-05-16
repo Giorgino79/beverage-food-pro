@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Elenco Clienti{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-users me-2"></i>Elenco Clienti
+                        </h4>
+                        <a href="{% url 'anagrafica:nuovo_cliente' %}" class="btn btn-light">
+                            <i class="fas fa-plus me-2"></i>Nuovo Cliente
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Barra di ricerca e filtri -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <form method="GET" class="d-flex">
+                                <input type="text" name="search" 
+                                       class="form-control" 
+                                       placeholder="Cerca per nome, email, telefono..." 
+                                       value="{{ search_query }}"
+                                       id="searchInput">
+                                <button type="submit" class="btn btn-outline-primary ms-2">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if search_query %}
+                                    <a href="{% url 'anagrafica:elenco_clienti' %}" class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'anagrafica:export_anagrafica' %}?tipo=clienti" 
+                                   class="btn btn-outline-success">
+                                    <i class="fas fa-download me-2"></i>Export CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if search_query %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Risultati per: <strong>"{{ search_query }}"</strong>
+                            ({{ clienti|length }} trovati)
+                        </div>
+                    {% endif %}
+
+                    <!-- Statistiche rapide -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-primary">{{ page_obj.paginator.count }}</h5>
+                                    <small class="text-muted">Totale Clienti</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-success">
+                                        {{ page_obj.paginator.count }}
+                                    </h5>
+                                    <small class="text-muted">Attivi</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabella clienti -->
+                    {% if clienti %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nome/Ragione Sociale</th>
+                                        <th>Rappresentante</th>
+                                        <th>Contatti</th>
+                                        <th>Dati Fiscali</th>
+                                        <th>Tipo Pagamento</th>
+                                        <th>Stato</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cliente in clienti %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-user text-white"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ cliente.nome }}</h6>
+                                                        <small class="text-muted">{{ cliente.zona|default:'Zona non specificata' }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if cliente.rappresentante %}
+                                                    <span class="badge bg-success">{{ cliente.rappresentante }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Non assegnato</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <i class="fas fa-phone text-success me-1"></i>
+                                                    <small>{{ cliente.telefono }}</small>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-envelope text-primary me-1"></i>
+                                                    <small>{{ cliente.email }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if cliente.partita_iva %}
+                                                    <div><small><strong>P.IVA:</strong> {{ cliente.partita_iva }}</small></div>
+                                                {% endif %}
+                                                {% if cliente.codice_fiscale %}
+                                                    <div><small><strong>CF:</strong> {{ cliente.codice_fiscale }}</small></div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ cliente.get_tipo_pagamento_display }}</span>
+                                            </td>
+                                            <td>
+                                                {% if cliente.attivo %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Attivo
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Inattivo
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'anagrafica:dettaglio_cliente' cliente.pk %}" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Visualizza">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'anagrafica:modifica_cliente' cliente.pk %}" 
+                                                       class="btn btn-outline-warning" 
+                                                       title="Modifica">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {% if user.is_staff %}
+                                                        <a href="{% url 'anagrafica:toggle_attivo' 'cliente' cliente.pk %}" 
+                                                           class="btn btn-outline-{% if cliente.attivo %}danger{% else %}success{% endif %}" 
+                                                           title="{% if cliente.attivo %}Disattiva{% else %}Attiva{% endif %}"
+                                                           onclick="return confirm('Sei sicuro di voler {% if cliente.attivo %}disattivare{% else %}attivare{% endif %} questo cliente?')">
+                                                            <i class="fas fa-{% if cliente.attivo %}pause{% else %}play{% endif %}"></i>
+                                                        </a>
+                                                        <a href="{% url 'anagrafica:elimina_cliente' cliente.pk %}" 
+                                                           class="btn btn-outline-danger" 
+                                                           title="Elimina"
+                                                           onclick="return confirm('Sei sicuro di voler eliminare questo cliente? Questa azione non può essere annullata.')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginazione -->
+                        {% if page_obj.paginator.num_pages > 1 %}
+                            <nav aria-label="Paginazione clienti">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-double-left"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if num == page_obj.number %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-right"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-angle-double-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            {% if search_query %}
+                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Nessun cliente trovato</h4>
+                                <p class="text-muted">Non ci sono clienti che corrispondono ai criteri di ricerca.</p>
+                                <a href="{% url 'anagrafica:elenco_clienti' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-arrow-left me-2"></i>Visualizza tutti i clienti
+                                </a>
+                            {% else %}
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Nessun cliente presente</h4>
+                                <p class="text-muted">Inizia aggiungendo il primo cliente al sistema.</p>
+                                <a href="{% url 'anagrafica:nuovo_cliente' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Aggiungi Primo Cliente
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus automatico sulla barra di ricerca
+    document.getElementById('searchInput').focus();
+    
+    // Evidenzia il testo di ricerca nei risultati
+    const searchQuery = "{{ search_query }}";
+    if (searchQuery) {
+        highlightSearchResults(searchQuery);
+    }
+    
+    function highlightSearchResults(query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        const cells = document.querySelectorAll('tbody td');
+        
+        cells.forEach(cell => {
+            if (cell.textContent.toLowerCase().includes(query.toLowerCase())) {
+                cell.innerHTML = cell.innerHTML.replace(regex, '<mark>$1</mark>');
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.pagination {
+    margin-top: 2rem;
+}
+
+.page-link {
+    color: #0d6efd;
+    border-radius: 6px !important;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-group .btn {
+    border-radius: 4px;
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+mark {
+    background-color: #fff3cd;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+.card.bg-light .card-body {
+    padding: 1rem;
+}
+
+.card.bg-light h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

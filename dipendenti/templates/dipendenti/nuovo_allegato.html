@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Nuovo Allegato{% endblock %}
+
+{% block page_title %}Caricamento Nuovo Allegato{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-primary text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-paperclip me-2"></i>Carica Allegato per {{ dipendente.get_full_name|default:dipendente.username }}
+                </h6>
+                <a href="{% url 'dipendenti:vedidipendente' pk=dipendente.pk %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Torna al Dipendente
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Carica un nuovo documento per il dipendente. I formati supportati sono: PDF, JPG, JPEG, PNG, DOC, DOCX.
+                            <br>Dimensione massima: 5MB.
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.tipo|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.nome|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="id_file" class="form-label">{{ form.file.label }}</label>
+                                <div class="custom-file-container">
+                                    <div class="input-group">
+                                        <input type="file" name="file" id="id_file" class="form-control" required>
+                                    </div>
+                                    <div id="file-preview-container" class="mt-2 d-none">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <i id="file-icon" class="fas fa-file fa-2x me-3 text-primary"></i>
+                                                    <div>
+                                                        <h6 id="file-name" class="mb-1"></h6>
+                                                        <small id="file-info" class="text-muted"></small>
+                                                    </div>
+                                                </div>
+                                                <div id="image-preview" class="mt-2 text-center d-none">
+                                                    <img src="" alt="Anteprima" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Seleziona un file da caricare.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                {{ form.visibile_al_dipendente }}
+                                <label class="form-check-label" for="id_visibile_al_dipendente">
+                                    {{ form.visibile_al_dipendente.label }}
+                                </label>
+                            </div>
+                            <small class="text-muted">
+                                Se selezionato, il dipendente potrà visualizzare questo documento nel suo profilo.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.note|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload me-2"></i>Carica Allegato
+                            </button>
+                            <a href="{% url 'dipendenti:vedidipendente' pk=dipendente.pk %}" class="btn btn-secondary btn-lg ms-2">
+                                <i class="fas fa-times me-2"></i>Annulla
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Anteprima file
+        const fileInput = document.getElementById('id_file');
+        const previewContainer = document.getElementById('file-preview-container');
+        const fileIcon = document.getElementById('file-icon');
+        const fileName = document.getElementById('file-name');
+        const fileInfo = document.getElementById('file-info');
+        const imagePreview = document.getElementById('image-preview');
+        const imageElement = imagePreview.querySelector('img');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Mostra il container dell'anteprima
+                previewContainer.classList.remove('d-none');
+                
+                // Mostra nome e dimensione
+                fileName.textContent = file.name;
+                fileInfo.textContent = formatBytes(file.size);
+                
+                // Determina l'icona in base al tipo di file
+                const fileType = file.type;
+                if (fileType.startsWith('image/')) {
+                    fileIcon.className = 'fas fa-file-image fa-2x me-3 text-success';
+                    
+                    // Per immagini, mostra l'anteprima
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imageElement.src = e.target.result;
+                        imagePreview.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else if (fileType === 'application/pdf') {
+                    fileIcon.className = 'fas fa-file-pdf fa-2x me-3 text-danger';
+                    imagePreview.classList.add('d-none');
+                } else if (fileType.includes('word') || 
+                           fileType === 'application/msword' || 
+                           fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    fileIcon.className = 'fas fa-file-word fa-2x me-3 text-primary';
+                    imagePreview.classList.add('d-none');
+                } else {
+                    fileIcon.className = 'fas fa-file fa-2x me-3 text-secondary';
+                    imagePreview.classList.add('d-none');
+                }
+                
+                // Validazione formato e dimensione
+                validateFile(file);
+            } else {
+                previewContainer.classList.add('d-none');
+            }
+        });
+        
+        // Validazione del file
+        function validateFile(file) {
+            const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            // Verifica estensione
+            const filename = file.name;
+            const extension = filename.split('.').pop().toLowerCase();
+            const isValidExt = allowedExtensions.includes(extension);
+            
+            // Verifica dimensione
+            const isValidSize = file.size <= maxSize;
+            
+            if (!isValidExt || !isValidSize) {
+                fileInput.setCustomValidity('File non valido');
+                
+                let errorMessage = '';
+                if (!isValidExt) {
+                    errorMessage += `Formato non supportato. Formati consentiti: ${allowedExtensions.join(', ')}. `;
+                }
+                if (!isValidSize) {
+                    errorMessage += `Il file supera la dimensione massima consentita (5MB).`;
+                }
+                
+                // Mostra errore
+                fileInfo.innerHTML = `<span class="text-danger">${errorMessage}</span>`;
+            } else {
+                fileInput.setCustomValidity('');
+            }
+        }
+        
+        // Formatta i bytes in KB, MB, etc.
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+        
+        // Attiva la validazione Bootstrap per il form
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+    });
+</script>
+{% endblock %}

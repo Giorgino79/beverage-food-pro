@@ -1,0 +1,19 @@
+{% load static %}
+<div class="container">
+    <div class="row align-items-center">
+        <div class="col-md-6 text-start text-md-start">
+            <p class="mb-0">
+                <strong>B&F</strong>
+                <img src="{% static 'images/bef.png' %}" alt="Logo Azienda" height="30" class="me-2">
+            </p>
+            <small class="text-muted">Versione 1.0</small>
+        </div>
+        
+        <div class="col-md-6"><small class="d-block text-muted mt-1">Powered by</small>
+            <img src="{% static 'images/logonuovo.jpeg' %}" alt="Logo Software House"  width="50" height="50" class="img-fluid">
+            
+        
+            <p class="mb-0">&copy; {% now "Y" %} Tutti i diritti riservati</p>
+        </div>
+    </div>
+</div>

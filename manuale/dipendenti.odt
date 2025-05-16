@@ -1,0 +1,195 @@
+# Manuale Utente - App Dipendenti
+
+## Indice
+1. [Introduzione](#introduzione)
+2. [Accesso al Sistema](#accesso-al-sistema)
+3. [Gestione Dipendenti](#gestione-dipendenti)
+   - [Visualizzazione Elenco Dipendenti](#visualizzazione-elenco-dipendenti)
+   - [Aggiunta Nuovo Dipendente](#aggiunta-nuovo-dipendente)
+   - [Modifica Dipendente](#modifica-dipendente)
+   - [Visualizzazione Dettagli Dipendente](#visualizzazione-dettagli-dipendente)
+4. [Gestione Documenti](#gestione-documenti)
+   - [Caricamento Documenti](#caricamento-documenti)
+   - [Visualizzazione Documenti](#visualizzazione-documenti)
+5. [Gestione Presenze](#gestione-presenze)
+   - [Registrazione Inizio Giornata](#registrazione-inizio-giornata)
+   - [Aggiornamento Orari](#aggiornamento-orari)
+   - [Chiusura Giornata](#chiusura-giornata)
+6. [Reportistica](#reportistica)
+   - [Report Mensile Ore](#report-mensile-ore)
+7. [Risoluzione Problemi](#risoluzione-problemi)
+
+---
+
+## Introduzione
+
+L'app Dipendenti è il modulo dedicato alla gestione del personale all'interno del sistema gestionale. Attraverso questa app è possibile:
+
+- Gestire gli account utenti/dipendenti del sistema
+- Archiviare documenti personali dei dipendenti
+- Tracciare presenze e orari di lavoro
+- Generare report sulle ore lavorate
+
+L'app è progettata per essere intuitiva e facile da usare, anche per utenti senza particolari competenze informatiche.
+
+---
+
+## Accesso al Sistema
+
+### Primo Accesso
+
+1. Riceverai dal tuo amministratore le credenziali iniziali (nome utente e password temporanea)
+2. Accedi all'URL del sistema
+3. Inserisci le tue credenziali iniziali
+4. Al primo accesso, ti verrà richiesto di cambiare la password temporanea
+
+### Accessi Successivi
+
+1. Vai all'URL del sistema
+2. Inserisci nome utente e password personale
+3. Clicca su "Accedi"
+
+### Password Dimenticata
+
+1. Nella schermata di login, clicca su "Password dimenticata?"
+2. Inserisci l'indirizzo email associato al tuo account
+3. Riceverai un'email con le istruzioni per reimpostare la password
+
+---
+
+## Gestione Dipendenti
+
+### Visualizzazione Elenco Dipendenti
+
+Questa funzionalità è disponibile solo per utenti con livello "totale" o "contabile".
+
+1. Dal menu laterale, clicca su "Dipendenti" > "Elenco Dipendenti"
+2. Verrà visualizzata una tabella con tutti i dipendenti
+3. Puoi ordinare la tabella cliccando sulle intestazioni delle colonne
+4. Utilizza la casella di ricerca per filtrare i risultati
+
+### Aggiunta Nuovo Dipendente
+
+Questa funzionalità è disponibile solo per utenti con livello "totale".
+
+1. Dal menu laterale, clicca su "Dipendenti" > "Nuovo Dipendente"
+2. Compila il modulo con i dati richiesti (i campi con * sono obbligatori):
+   - **Username**: nome utente univoco (obbligatorio)
+   - **Password**: password iniziale (obbligatoria)
+   - **Email**: indirizzo email (obbligatorio)
+   - **Nome e Cognome**: dati anagrafici
+   - **Livello autorizzazioni**: determina i permessi dell'utente
+   - **Altri dati personali**: indirizzo, telefono, ecc.
+3. Clicca su "Salva" per creare il nuovo dipendente
+
+### Modifica Dipendente
+
+Questa funzionalità è disponibile solo per utenti con livello "totale" o "contabile".
+
+1. Dall'elenco dipendenti, clicca sull'icona 🖊️ accanto al dipendente da modificare
+2. Aggiorna i campi necessari
+3. Clicca su "Salva" per confermare le modifiche
+
+### Visualizzazione Dettagli Dipendente
+
+1. Dall'elenco dipendenti, clicca sul nome del dipendente
+2. Verrà visualizzata una scheda con tutti i dettagli del dipendente:
+   - Informazioni personali
+   - Documenti caricati
+   - Storico presenze
+
+---
+
+## Gestione Documenti
+
+### Caricamento Documenti
+
+Questa funzionalità è disponibile solo per utenti con livello "totale" o "contabile".
+
+1. Nella pagina dei dettagli del dipendente, vai alla sezione "Documenti"
+2. Clicca su "Aggiungi Documento"
+3. Compila il modulo:
+   - **Tipo**: seleziona la categoria del documento
+   - **Nome**: assegna un nome descrittivo
+   - **File**: carica il file (formati supportati: PDF, JPG, PNG, DOC)
+   - **Visibile al dipendente**: spunta se il documento deve essere visibile anche al dipendente stesso
+   - **Note**: eventuali annotazioni sul documento
+4. Clicca su "Salva" per caricare il documento
+
+### Visualizzazione Documenti
+
+1. Nella pagina dei dettagli del dipendente, vai alla sezione "Documenti"
+2. Clicca sul nome del documento per visualizzarlo o scaricarlo
+3. I documenti sono organizzati per tipo
+
+> **Nota**: Ogni dipendente può vedere solo i propri documenti marcati come "Visibile al dipendente"
+
+---
+
+## Gestione Presenze
+
+### Registrazione Inizio Giornata
+
+1. Dopo aver effettuato l'accesso, vai al tuo profilo cliccando sul tuo nome in alto a destra
+2. Nella pagina del profilo, se non hai ancora registrato la giornata odierna, clicca su "Inizia Giornata"
+3. Inserisci l'ora di inizio mattina (il sistema propone l'ora corrente)
+4. Clicca su "Salva"
+
+### Aggiornamento Orari
+
+1. Nel tuo profilo, clicca su "Aggiorna Giornata"
+2. Inserisci gli orari mancanti:
+   - **Fine mattina**: quando termini la mattinata di lavoro
+   - **Inizio pomeriggio**: quando inizi il pomeriggio
+   - **Fine pomeriggio**: quando termini la giornata
+3. Se necessario, seleziona un'eventuale assenza e inserisci note
+4. Clicca su "Salva"
+
+### Chiusura Giornata
+
+1. Nel tuo profilo, clicca su "Aggiorna Giornata"
+2. Assicurati che tutti gli orari siano inseriti correttamente
+3. Spunta la casella "Chiudi Giornata"
+4. Clicca su "Salva"
+
+> **Importante**: Una volta chiusa, la giornata non può più essere modificata dal dipendente, ma solo dagli amministratori.
+
+---
+
+## Reportistica
+
+### Report Mensile Ore
+
+Questa funzionalità è disponibile solo per utenti con livello "totale".
+
+1. Dal menu laterale, clicca su "Dipendenti" > "Report Ore"
+2. Seleziona il dipendente dal menu a tendina
+3. Seleziona il periodo di interesse (data inizio e data fine)
+4. Clicca su "Genera Report"
+5. Verrà generato un PDF con il riepilogo delle ore lavorate, che puoi visualizzare, scaricare o stampare
+
+---
+
+## Risoluzione Problemi
+
+### Problemi di Accesso
+
+**Problema**: Non riesco ad accedere al sistema  
+**Soluzione**: Verifica di aver digitato correttamente username e password. Se il problema persiste, utilizza la funzione "Password dimenticata" o contatta l'amministratore.
+
+**Problema**: Ho ricevuto il messaggio "Account disattivato"  
+**Soluzione**: Il tuo account è stato disattivato dall'amministratore. Contatta l'amministratore per riattivarlo.
+
+### Problemi con le Presenze
+
+**Problema**: Non riesco a modificare una giornata  
+**Soluzione**: Le giornate già chiuse o di date passate non possono essere modificate dai dipendenti. Contatta un amministratore per eventuali correzioni.
+
+**Problema**: Non vedo il bottone "Inizia Giornata"  
+**Soluzione**: Hai già iniziato la giornata lavorativa. Utilizza invece "Aggiorna Giornata".
+
+### Altri Problemi
+
+Per qualsiasi altro problema non elencato, contatta l'amministratore di sistema.
+
+---

@@ -1,0 +1,409 @@
+{% load static %}
+<!-- sidebar.html - Aggiornata con anagrafica e styling migliorato -->
+<nav id="sidebar" class="col-md-2 d-md-block sidebar collapse">
+    <style>
+        .sidebar {
+            background-color: #2C3E50 !important;
+            min-height: 100vh;
+        }
+        
+        .sidebar .sidebar-heading {
+            background-color: #34495E;
+            color: white;
+            padding: 1rem;
+            font-weight: bold;
+            border-bottom: 1px solid #3498DB;
+        }
+        
+        .sidebar .nav-item {
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+        }
+        
+        .sidebar .nav-link {
+            color: #BDC3C7 !important;
+            padding: 0.75rem 1rem;
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover {
+            color: white !important;
+            background-color: rgba(52, 152, 219, 0.2);
+            padding-left: 1.5rem;
+        }
+        
+        .sidebar .nav-link.active {
+            color: white !important;
+            background-color: #3498DB;
+            border-left: 4px solid #2ECC71;
+        }
+        
+        .sidebar .nav-item.has-treeview.menu-open > .nav-link {
+            color: white !important;
+            background-color: rgba(52, 152, 219, 0.3);
+        }
+        
+        .sidebar .nav-treeview {
+            background-color: rgba(44, 62, 80, 0.8);
+        }
+        
+        .sidebar .nav-treeview .nav-link {
+            color: #AEB6BF !important;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar .nav-treeview .nav-link:hover {
+            color: white !important;
+            background-color: rgba(52, 152, 219, 0.3);
+            padding-left: 2.5rem;
+        }
+        
+        .sidebar .nav-header {
+            color: #85929E !important;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+        }
+        
+        .sidebar .nav-header:first-child {
+            margin-top: 0;
+        }
+        
+        .user-profile {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #3498DB;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .user-profile img, .user-profile .profile-placeholder {
+            border: 3px solid #3498DB;
+        }
+        
+        .user-profile .user-name {
+            color: white;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        
+        .user-profile .user-role {
+            color: #85929E;
+            font-size: 0.85rem;
+        }
+    </style>
+    
+    <div class="sidebar-sticky pt-0">
+        <!-- User Profile Section -->
+        <div class="user-profile">
+            <!-- Logo BEF al posto della foto profilo -->
+            <img src="{% static 'images/bef.png' %}" alt="Logo BEF" class="rounded" style="width: 60px; height: auto; max-height: 50px;">
+            <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="user-role">{{ user.get_livello_display|default:"Utente" }}</div>
+        </div>
+        
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-header">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'home:index' %}" class="nav-link {% if 'home' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="nav-icon fas fa-home"></i>
+                    <p>Home</p>
+                </a>
+            </li>
+            
+            <!-- Dipendenti -->
+            <li class="nav-header">
+                <i class="fas fa-users"></i> Gestione Dipendenti
+            </li>
+            <li class="nav-item has-treeview {% if 'dipendenti' in request.resolver_match.url_name %}menu-open{% endif %}">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                        Dipendenti
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{% url 'dipendenti:elencodipendenti' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Elenco Dipendenti</p>
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.livello == 'totale' %}
+                    <li class="nav-item">
+                        <a href="{% url 'dipendenti:registradipendente' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Nuovo Dipendente</p>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{% url 'dipendenti:profilo' username=user.username %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Il Mio Profilo</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <!-- Anagrafica -->
+            <li class="nav-header">
+                <i class="fas fa-address-book"></i> Anagrafica
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'anagrafica:dashboard' %}" class="nav-link {% if 'anagrafica:dashboard' == request.resolver_match.url_name %}active{% endif %}">
+                    <i class="nav-icon fas fa-chart-pie"></i>
+                    <p>Dashboard Anagrafica</p>
+                </a>
+            </li>
+            
+            <!-- Rappresentanti -->
+            <li class="nav-item has-treeview {% if 'rappresentant' in request.resolver_match.url_name %}menu-open{% endif %}">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-user-tie"></i>
+                    <p>
+                        Rappresentanti
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:elenco_rappresentanti' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Elenco Rappresentanti</p>
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.livello == 'totale' %}
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:nuovo_rappresentante' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Nuovo Rappresentante</p>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </li>
+            
+            <!-- Clienti -->
+            <li class="nav-item has-treeview {% if 'client' in request.resolver_match.url_name %}menu-open{% endif %}">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-building"></i>
+                    <p>
+                        Clienti
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:elenco_clienti' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Elenco Clienti</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:nuovo_cliente' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Nuovo Cliente</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <!-- Fornitori -->
+            <li class="nav-item has-treeview {% if 'fornitor' in request.resolver_match.url_name %}menu-open{% endif %}">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-truck"></i>
+                    <p>
+                        Fornitori
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:elenco_fornitori' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Elenco Fornitori</p>
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.livello == 'totale' %}
+                    <li class="nav-item">
+                        <a href="{% url 'anagrafica:nuovo_fornitore' %}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Nuovo Fornitore</p>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </li>
+            
+            <!-- Chat e Messaggi -->
+            <li class="nav-header">
+                <i class="fas fa-comments"></i> Comunicazioni
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'home:chat' %}" class="nav-link {% if 'chat' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="nav-icon fas fa-comments"></i>
+                    <p>
+                        Chat
+                        {% if messaggi_non_letti > 0 %}
+                        <span class="badge badge-danger right">{{ messaggi_non_letti }}</span>
+                        {% endif %}
+                    </p>
+                </a>
+            </li>
+            
+            <!-- Promemoria -->
+            <li class="nav-item">
+                <a href="{% url 'home:promemoria_list' %}" class="nav-link {% if 'promemoria' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="nav-icon fas fa-tasks"></i>
+                    <p>Promemoria</p>
+                </a>
+            </li>
+            
+            <!-- Prossime App (commentate per ora) -->
+            <!--
+            <li class="nav-header">
+                <i class="fas fa-cogs"></i> Gestione Operativa
+            </li>
+            
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-warehouse"></i>
+                    <p>
+                        Magazzino
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Inventario</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-shopping-cart"></i>
+                    <p>
+                        Ordini
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Ordini Clienti</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                    <p>
+                        Vendite
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Fatture</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-truck"></i>
+                    <p>
+                        Automezzi
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Parco Veicoli</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            -->
+            
+            <!-- Ricerca e Utilità -->
+            <li class="nav-header">
+                <i class="fas fa-tools"></i> Utilità
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'anagrafica:api_search' %}" class="nav-link">
+                    <i class="nav-icon fas fa-search"></i>
+                    <p>Ricerca Globale</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'anagrafica:export_anagrafica' %}" class="nav-link">
+                    <i class="nav-icon fas fa-download"></i>
+                    <p>Export Dati</p>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Script per gestire il collasso dei menu -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestione dei menu con treeview
+    const treeviewItems = document.querySelectorAll('.nav-item.has-treeview > .nav-link');
+    
+    treeviewItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parent = this.parentElement;
+            const submenu = parent.querySelector('.nav-treeview');
+            
+            if (submenu) {
+                // Chiudi tutti gli altri menu aperti
+                document.querySelectorAll('.nav-item.has-treeview').forEach(otherItem => {
+                    if (otherItem !== parent && otherItem.classList.contains('menu-open')) {
+                        otherItem.classList.remove('menu-open');
+                        const otherSubmenu = otherItem.querySelector('.nav-treeview');
+                        if (otherSubmenu) {
+                            otherSubmenu.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Toggle menu corrente
+                parent.classList.toggle('menu-open');
+                submenu.style.display = parent.classList.contains('menu-open') ? 'block' : 'none';
+            }
+        });
+    });
+    
+    // Apri automaticamente il menu del percorso attuale
+    const currentMenuItem = document.querySelector('.nav-item.has-treeview.menu-open');
+    if (currentMenuItem) {
+        const submenu = currentMenuItem.querySelector('.nav-treeview');
+        if (submenu) {
+            submenu.style.display = 'block';
+        }
+    }
+});
+</script>

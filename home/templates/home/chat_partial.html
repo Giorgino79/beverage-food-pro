@@ -1,0 +1,35 @@
+<!-- templates/home/chat_partial.html -->
+<div class="chat-container">
+    <!-- Messaggi ricevuti -->
+    {% if vedi %}
+        <div class="messages-list mb-4">
+            {% for messaggio in vedi %}
+                <div class="message-item mb-2">
+                    <div class="d-flex align-items-center">
+                        <span class="message-sender fw-bold">{{ messaggio.mittente.get_full_name|default:messaggio.mittente.username }}:</span>
+                        <span class="message-date text-muted ms-auto small">{{ messaggio.data_invio|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="message-content p-2 bg-light rounded">
+                        {{ messaggio.testo }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Non hai messaggi.</div>
+    {% endif %}
+    
+    <!-- Form per invio messaggio -->
+    <form method="post" action="{% url 'home:chat' %}" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_destinatario" class="form-label">Destinatario:</label>
+            {{ form.destinatario }}
+        </div>
+        <div class="mb-3">
+            <label for="id_testo" class="form-label">Messaggio:</label>
+            {{ form.testo }}
+        </div>
+        <button type="submit" class="btn btn-primary">Invia messaggio</button>
+    </form>
+</div>

@@ -1,0 +1,215 @@
+<!-- templates/home/search_results.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}
+    {% if results.query %}
+        Risultati ricerca: "{{ results.query }}"
+    {% else %}
+        Ricerca
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if results.query %}
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4>Risultati per: <span class="text-primary">"{{ results.query }}"</span></h4>
+                        <p class="text-muted">{{ results.total_results }} risultati trovati</p>
+                    </div>
+                    <form method="get" class="d-flex">
+                        <input type="search" name="q" class="form-control me-2" placeholder="Nuova ricerca..." value="{{ results.query }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        {% if results.total_results > 0 %}
+            <div class="row">
+                <!-- Risultati Dipendenti -->
+                {% if results.dipendenti %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-users me-2"></i>
+                                Dipendenti ({{ results.dipendenti|length }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for dipendente in results.dipendenti %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <a href="{% url 'dipendenti:vedidipendente' pk=dipendente.pk %}" class="text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ dipendente.get_full_name|default:dipendente.username }}</h6>
+                                            <small class="text-muted">{{ dipendente.email }}</small>
+                                            {% if dipendente.livello %}
+                                            <span class="badge bg-secondary ms-2">{{ dipendente.get_livello_display }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Risultati Messaggi -->
+                {% if results.messaggi %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-comments me-2"></i>
+                                Messaggi ({{ results.messaggi|length }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for messaggio in results.messaggi %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <a href="{% url 'home:chat' %}?contatto={{ messaggio.mittente.id }}" class="text-decoration-none">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <i class="fas fa-comment fa-2x text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                {% if messaggio.mittente == user %}
+                                                    A: {{ messaggio.destinatario.get_full_name|default:messaggio.destinatario.username }}
+                                                {% else %}
+                                                    Da: {{ messaggio.mittente.get_full_name|default:messaggio.mittente.username }}
+                                                {% endif %}
+                                            </h6>
+                                            <p class="mb-1 small">{{ messaggio.testo|truncatechars:80 }}</p>
+                                            <small class="text-muted">{{ messaggio.data_invio|date:"d/m/Y H:i" }}</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Risultati Promemoria -->
+                {% if results.promemoria %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Promemoria ({{ results.promemoria|length }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for promemoria in results.promemoria %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <a href="{% url 'home:promemoria_list' %}" class="text-decoration-none">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <i class="fas fa-task fa-2x text-warning"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ promemoria.titolo }}</h6>
+                                            <p class="mb-1 small">{{ promemoria.descrizione|truncatechars:60 }}</p>
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">
+                                                    Scadenza: {{ promemoria.data_scadenza|date:"d/m/Y" }}
+                                                </small>
+                                                {% if promemoria.completato %}
+                                                <span class="badge bg-success">Completato</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">In sospeso</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <h4>Nessun risultato trovato</h4>
+                        <p>Non abbiamo trovato nessun risultato per "<strong>{{ results.query }}</strong>"</p>
+                        <p class="small text-muted">Prova con una parola chiave diversa o controlla l'ortografia.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="alert alert-light border">
+                    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                    <h3 class="text-muted">Ricerca Globale</h3>
+                    <p class="lead">Cerca dipendenti, messaggi, promemoria e molto altro in tutto il sistema</p>
+                    <form method="get" class="mt-4">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group input-group-lg">
+                                    <input type="search" name="q" class="form-control" placeholder="Inizia a cercare...">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-search"></i> Cerca
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            Suggerimenti: puoi cercare per nome, email, testo dei messaggi, e molto altro
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card-header h5 {
+    font-size: 1.1rem;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+}
+
+.border-bottom:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.input-group-lg .form-control {
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.input-group-lg .btn {
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+</style>
+{% endblock %}

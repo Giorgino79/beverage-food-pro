@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat - Sistema Gestionale{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Lista contatti -->
+        <div class="col-md-3">
+            <div class="card mb-4 shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Contatti</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="contactsDropdown" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="contactsDropdown">
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-user-plus fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Aggiungi contatto
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Crea gruppo
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-search fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Cerca contatti
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="contacts-container" style="height: calc(100vh - 260px);">
+                        <!-- Campo di ricerca contatti -->
+                        <div class="input-group py-2 px-3 border-bottom">
+                            <input type="text" class="form-control border-0 bg-light" placeholder="Cerca contatti..." id="search-contacts">
+                            <button class="btn btn-outline-secondary border-0 bg-light" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Lista contatti -->
+                        {% for contatto in contatti %}
+                        <div class="contact-item d-flex align-items-center {% if contatto.id == contatto_selezionato.id %}active{% endif %}" 
+                             onclick="window.location='{% url 'home:chat' %}?contatto={{ contatto.id }}'">
+                            <div class="contact-avatar">
+                                {% if contatto.get_initials %}
+                                    {{ contatto.get_initials }}
+                                {% else %}
+                                    {{ contatto.username|slice:":2"|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="ms-2">
+                                <div class="fw-bold">{{ contatto.get_full_name|default:contatto.username }}</div>
+                                <div class="small text-muted">
+                                    {% if contatto.last_login %}
+                                        Ultimo accesso: {{ contatto.last_login|date:"d/m H:i" }}
+                                    {% else %}
+                                        Offline
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="contact-status {% if contatto.is_active %}status-online{% else %}status-offline{% endif %} ms-auto"></div>
+                        </div>
+                        {% empty %}
+                        <div class="p-3 text-center text-muted">
+                            <i class="fas fa-user-friends mb-2" style="font-size: 2rem;"></i>
+                            <p>Nessun contatto trovato</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Area chat -->
+        <div class="col-md-9">
+            <div class="card mb-4 shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    {% if contatto_selezionato %}
+                    <div class="d-flex align-items-center">
+                        <div class="contact-avatar me-2">
+                            {% if contatto_selezionato.get_initials %}
+                                {{ contatto_selezionato.get_initials }}
+                            {% else %}
+                                {{ contatto_selezionato.username|slice:":2"|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="m-0 font-weight-bold">{{ contatto_selezionato.get_full_name|default:contatto_selezionato.username }}</h6>
+                            <small class="text-muted">
+                                {% if contatto_selezionato.last_login %}
+                                    Ultimo accesso: {{ contatto_selezionato.last_login|date:"d/m H:i" }}
+                                {% else %}
+                                    Offline
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <h6 class="m-0 font-weight-bold">Messaggi</h6>
+                    {% endif %}
+                    
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="chatDropdown" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="chatDropdown">
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-search fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Cerca nei messaggi
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-bell-slash fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Disattiva notifiche
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="#">
+                                <i class="fas fa-trash fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Elimina conversazione
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="chat-container">
+                        {% if contatto_selezionato %}
+                            <div class="messages-container d-flex flex-column">
+                                {% if conversazione %}
+                                    {% for messaggio in conversazione %}
+                                        <div class="message-item {% if messaggio.mittente == user %}sent{% else %}received{% endif %}">
+                                            <div class="message-bubble {% if messaggio.mittente == user %}sent{% else %}received{% endif %} p-3 shadow-sm">
+                                                <div class="message-text">{{ messaggio.testo|linebreaks }}</div>
+                                                
+                                                {% if messaggio.allegato %}
+                                                <div class="message-attachment mt-2 p-2 border rounded bg-white">
+                                                    <div class="d-flex align-items-center">
+                                                        {% if messaggio.is_image %}
+                                                            <div class="mt-2">
+                                                                <img src="{{ messaggio.allegato.url }}" class="img-fluid rounded" style="max-height: 200px;" alt="Immagine allegata">
+                                                            </div>
+                                                        {% else %}
+                                                            <i class="fas {% if messaggio.is_document %}fa-file-alt{% else %}fa-paperclip{% endif %} me-2"></i>
+                                                            <span>{{ messaggio.nome_allegato }}</span>
+                                                        {% endif %}
+                                                        <a href="{{ messaggio.allegato.url }}" class="btn btn-sm btn-outline-primary ms-auto" download>
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div class="message-time text-end mt-1">
+                                                    {{ messaggio.data_invio|date:"H:i" }}
+                                                    {% if messaggio.mittente == user %}
+                                                        {% if messaggio.letto %}
+                                                            <i class="fas fa-check-double text-primary ms-1" title="Letto"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check ms-1" title="Inviato"></i>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="text-center p-5">
+                                            <i class="fas fa-comments text-muted mb-3" style="font-size: 3rem;"></i>
+                                            <h5>Nessun messaggio</h5>
+                                            <p class="text-muted">Questa è una nuova conversazione. Scrivi un messaggio per iniziare a chattare con {{ contatto_selezionato.get_full_name|default:contatto_selezionato.username }}.</p>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center p-5">
+                                        <i class="fas fa-comments text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h5>Nessun messaggio</h5>
+                                        <p class="text-muted">Questa è una nuova conversazione. Scrivi un messaggio per iniziare a chattare con {{ contatto_selezionato.get_full_name|default:contatto_selezionato.username }}.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Form per l'invio dei messaggi - sempre visibile quando un contatto è selezionato -->
+                            <div class="chat-input-container">
+                                <form method="post" enctype="multipart/form-data" class="chat-input-form">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <label for="id_allegato" class="btn btn-attach">
+                                            <i class="fas fa-paperclip"></i>
+                                        </label>
+                                        <input type="file" id="id_allegato" name="allegato" class="file-upload" 
+                                               data-preview-container="#file-preview" 
+                                               data-file-name-element="#file-name" style="display: none;">
+                                        
+                                        <input type="hidden" name="destinatario" value="{{ contatto_selezionato.id }}">
+                                        
+                                        <textarea name="testo" class="form-control auto-resize" placeholder="Scrivi un messaggio..." rows="1"></textarea>
+                                        
+                                        <button type="submit" class="btn btn-primary btn-send">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                    <div id="file-preview" class="mt-2"></div>
+                                    <div id="file-selected" class="small text-muted mt-1 d-none">
+                                        File selezionato: <span id="file-name"></span>
+                                        <a href="#" id="remove-file" class="text-danger ms-1">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        {% elif messaggi_ricevuti %}
+                            <!-- Visualizzazione di tutti i messaggi ricevuti se non è selezionato un contatto -->
+                            <div class="p-4">
+                                <div class="alert alert-info mb-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Seleziona un contatto dalla lista per visualizzare la conversazione
+                                </div>
+                                
+                                <h5 class="mb-3">Messaggi recenti</h5>
+                                
+                                <div class="messages-overview">
+                                    {% for messaggio in messaggi_ricevuti %}
+                                        <div class="message-preview card mb-3 {% if not messaggio.letto %}border-left-primary{% endif %}">
+                                            <div class="card-body">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar-circle">
+                                                            {% if messaggio.mittente.get_initials %}
+                                                                {{ messaggio.mittente.get_initials }}
+                                                            {% else %}
+                                                                {{ messaggio.mittente.username|slice:":2"|upper }}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mt-0">
+                                                            {{ messaggio.mittente.get_full_name|default:messaggio.mittente.username }}
+                                                            {% if not messaggio.letto %}
+                                                                <span class="badge bg-primary ms-2">Nuovo</span>
+                                                            {% endif %}
+                                                        </h6>
+                                                        <p class="mb-1">{{ messaggio.testo|truncatechars:150 }}</p>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">{{ messaggio.data_invio|date:"d/m/Y H:i" }}</small>
+                                                            <a href="{% url 'home:chat' %}?contatto={{ messaggio.mittente.id }}" class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-reply me-1"></i> Rispondi
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Nessun messaggio -->
+                            <div class="text-center p-5">
+                                <img src="{% static 'img/chat-placeholder.svg' %}" alt="Seleziona un contatto" style="max-width: 200px; opacity: 0.6;">
+                                <h4 class="mt-3">Nessun messaggio</h4>
+                                <p class="text-muted">Inizia a chattare con i tuoi colleghi selezionando un contatto dalla lista</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Posiziona lo scroll all'ultimo messaggio
+    const messagesContainer = document.querySelector('.messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Ricerca contatti in tempo reale
+    const searchInput = document.getElementById('search-contacts');
+    const contactItems = document.querySelectorAll('.contact-item');
+    
+    if (searchInput && contactItems.length > 0) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            contactItems.forEach(item => {
+                const contactName = item.querySelector('.fw-bold').textContent.toLowerCase();
+                
+                if (searchTerm === '' || contactName.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Auto-espandi textarea quando l'utente digita
+    const textarea = document.querySelector('textarea[name="testo"]');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.scrollHeight > 150) {
+                this.style.height = '150px';
+                this.style.overflowY = 'auto';
+            } else {
+                this.style.overflowY = 'hidden';
+            }
+        });
+        
+        // Focus sulla textarea quando la pagina carica
+        setTimeout(() => {
+            textarea.focus();
+        }, 500);
+    }
+    
+    // Gestione file allegati
+    const fileInput = document.getElementById('id_allegato');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileName = this.files[0]?.name;
+            if (fileName) {
+                document.getElementById('file-name').textContent = fileName;
+                document.getElementById('file-selected').classList.remove('d-none');
+                
+                // Visualizza anteprima se è un'immagine
+                const filePreview = document.getElementById('file-preview');
+                if (filePreview && this.files[0].type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        filePreview.innerHTML = `
+                            <div class="position-relative">
+                                <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 100px;" alt="Anteprima">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" id="remove-preview">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                        
+                        document.getElementById('remove-preview').addEventListener('click', function() {
+                            fileInput.value = '';
+                            filePreview.innerHTML = '';
+                            document.getElementById('file-selected').classList.add('d-none');
+                        });
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            }
+        });
+        
+        const removeFileButton = document.getElementById('remove-file');
+        if (removeFileButton) {
+            removeFileButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                fileInput.value = '';
+                document.getElementById('file-selected').classList.add('d-none');
+                document.getElementById('file-preview').innerHTML = '';
+            });
+        }
+    }
+    
+    // Gestione invio messaggio con Ctrl+Enter
+    const messageForm = document.querySelector('.chat-input-form');
+    if (textarea && messageForm) {
+        textarea.addEventListener('keydown', function(e) {
+            // Invia messaggio con Ctrl+Enter o Cmd+Enter
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                
+                // Verifica che il messaggio non sia vuoto
+                if (textarea.value.trim() !== '' || fileInput.files.length > 0) {
+                    messageForm.submit();
+                }
+            }
+        });
+    }
+    
+    // Invia messaggi non letti alla navbar con aggiornamento periodico
+    function aggiornaMessaggiNonLetti() {
+        // In un'applicazione reale, qui faresti una chiamata AJAX
+        // per ottenere il numero di messaggi non letti
+        console.log('Controllo messaggi non letti...');
+        
+        // Esempio: ogni 30 secondi controlla i nuovi messaggi
+        setTimeout(aggiornaMessaggiNonLetti, 30000);
+    }
+    
+    // Avvia il controllo periodico
+    aggiornaMessaggiNonLetti();
+});
+</script>
+{% endblock %}

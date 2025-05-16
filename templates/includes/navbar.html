@@ -1,0 +1,238 @@
+{% load static %}<!-- templates/navbar.html - Versione senza building icon e sistema gestionale -->
+<!-- templates/includes/navbar.html - Versione corretta -->
+<header class="navbar navbar-light sticky-top bg-light flex-md-nowrap p-0 shadow">
+    <!-- Toggle button per dispositivi mobili -->
+    <button class="navbar-toggler d-md-none" type="button">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- Brand placeholder (nascosto) -->
+    <div class="navbar-brand col-md-3 col-lg-2 me-0 px-3">
+    </div>
+    
+    <!-- Barra di ricerca operativa -->
+    <div class="d-none d-md-flex col">
+        <form class="d-flex w-100" method="get" action="{% url 'home:global_search' %}">
+            <div class="input-group">
+                <input class="form-control border-secondary" 
+                       type="search" 
+                       name="q" 
+                       placeholder="Cerca dipendenti, messaggi, promemoria..." 
+                       aria-label="Cerca"
+                       value="{{ request.GET.q }}"
+                       id="globalSearchInput">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Data e ora (visibile solo su desktop) -->
+    <div class="d-none d-lg-flex me-3">
+        <small class="text-muted">
+            <i class="fas fa-calendar me-1"></i> {{ today_day }}, {{ today_date }}
+            <i class="fas fa-clock ms-3 me-1"></i> {{ current_time }}
+        </small>
+    </div>
+    
+    <!-- Dropdown Tools -->
+    <div class="navbar-nav me-2 d-none d-lg-flex">
+        <div class="nav-item dropdown">
+            <a class="nav-link px-3 dropdown-toggle text-dark" href="#" id="toolsDropdown" role="button" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-tools"></i>
+                <span class="d-none d-lg-inline ms-1">Tools</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="toolsDropdown">
+                <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#calculatorModal">
+                        <i class="fas fa-calculator me-2"></i> Calcolatrice
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="#" onclick="alert('Prossimamente!')">
+                        <i class="fas fa-calendar me-2"></i> Calendario
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="#" onclick="alert('Prossimamente!')">
+                        <i class="fas fa-sticky-note me-2"></i> Note rapide
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Notifiche -->
+    <div class="navbar-nav me-2">
+        <div class="nav-item dropdown">
+            <a class="nav-link px-3 dropdown-toggle text-dark notification-icon" href="#" id="notificheDropdown" role="button" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-bell"></i>
+                {% if messaggi_non_letti > 0 %}
+                <span class="notification-badge">
+                    {{ messaggi_non_letti|default:0 }}
+                </span>
+                {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificheDropdown" style="min-width: 300px;">
+                {% if messaggi_recenti %}
+                    {% for messaggio in messaggi_recenti %}
+                    <li class="notification-item {% if not messaggio.letto %}unread{% endif %}">
+                        <a class="dropdown-item" href="{% url 'home:chat' %}?contatto={{ messaggio.mittente.id }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>{{ messaggio.mittente.get_full_name|default:messaggio.mittente.username }}</strong>
+                                    <div class="text-muted small mt-1">{{ messaggio.testo|truncatechars:45 }}</div>
+                                </div>
+                                <div class="small text-muted ms-2" style="min-width: 60px;">
+                                    {{ messaggio.data_invio|date:"d/m H:i" }}
+                                </div>
+                            </div>
+                            {% if not messaggio.letto %}
+                            <div class="unread-dot"></div>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li><span class="dropdown-item text-muted">Nessun messaggio</span></li>
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-center fw-bold" href="{% url 'home:chat' %}">
+                        <i class="fas fa-comments me-1"></i> Visualizza tutti i messaggi
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Logout (visibile solo su mobile) -->
+    {% if user.is_authenticated %}
+    <div class="navbar-nav me-2 d-md-none">
+        <a class="nav-link px-3 text-danger" href="{% url 'dipendenti:esci' %}" title="Esci">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Username e menu utente (solo su desktop) -->
+    <div class="navbar-nav d-none d-md-flex">
+        <div class="nav-item dropdown">
+            <a class="nav-link px-3 dropdown-toggle text-dark" href="#" id="userDropdown" role="button" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle me-1"></i>
+                {% if user.is_authenticated %}
+                    <span>{{ user.first_name|default:user.username }}</span>
+                {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                {% if user.is_authenticated %}
+                    <li><a class="dropdown-item" href="{% url 'dipendenti:profilo' username=user.username %}">
+                        <i class="fas fa-user me-2"></i> Profilo
+                    </a></li>
+                    <li><a class="dropdown-item" href="#">
+                        <i class="fas fa-cog me-2"></i> Impostazioni
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'dipendenti:esci' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i> Esci
+                    </a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</header>
+
+
+<!-- Modali Calculator e resto uguale -->
+<!-- Modal per la Calcolatrice -->
+<div class="modal fade" id="calculatorModal" tabindex="-1" aria-labelledby="calculatorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 300px;">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="calculatorModalLabel">
+                    <i class="fas fa-calculator me-2"></i>Calcolatrice
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <div class="calculator">
+                    <div class="calculator-display">
+                        <input type="text" id="calculatorDisplay" class="form-control text-end" 
+                               value="0" readonly style="font-size: 1.5rem; height: 60px;">
+                    </div>
+                    <div class="calculator-buttons mt-2">
+                        <div class="row g-1">
+                            <div class="col-3">
+                                <button class="btn btn-danger w-100 h-100 calc-btn" data-action="clear">C</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-warning w-100 h-100 calc-btn" data-action="backspace">←</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-info w-100 h-100 calc-btn" data-value="/">/</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-info w-100 h-100 calc-btn" data-value="*">×</button>
+                            </div>
+                        </div>
+                        <div class="row g-1 mt-1">
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="7">7</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="8">8</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="9">9</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-info w-100 h-100 calc-btn" data-value="-">-</button>
+                            </div>
+                        </div>
+                        <div class="row g-1 mt-1">
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="4">4</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="5">5</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="6">6</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-info w-100 h-100 calc-btn" data-value="+">+</button>
+                            </div>
+                        </div>
+                        <div class="row g-1 mt-1">
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="1">1</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="2">2</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="3">3</button>
+                            </div>
+                            <div class="col-3 d-flex flex-column">
+                                <button class="btn btn-success w-100 flex-grow-1 calc-btn" data-action="equals" style="height: calc(200% + 5px);">=</button>
+                            </div>
+                        </div>
+                        <div class="row g-1 mt-1">
+                            <div class="col-6">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value="0">0</button>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-secondary w-100 h-100 calc-btn" data-value=".">.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></div>

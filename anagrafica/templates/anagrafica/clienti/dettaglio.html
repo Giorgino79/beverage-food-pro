@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ cliente.nome }} - Dettagli Cliente{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header con azioni -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-user me-2 text-primary"></i>{{ cliente.nome }}
+                    </h2>
+                    <p class="text-muted mb-0">
+                        <small>
+                            <i class="fas fa-calendar me-1"></i>Creato il {{ cliente.created_at|date:"d/m/Y" }}
+                            {% if cliente.updated_at != cliente.created_at %}
+                                - Aggiornato il {{ cliente.updated_at|date:"d/m/Y" }}
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'anagrafica:elenco_clienti' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Torna all'elenco
+                    </a>
+                    <a href="{% url 'anagrafica:modifica_cliente' cliente.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Modifica
+                    </a>
+                    {% if user.is_staff %}
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog me-2"></i>Azioni
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'anagrafica:toggle_attivo' 'cliente' cliente.pk %}"
+                                       onclick="return confirm('Sei sicuro di voler {% if cliente.attivo %}disattivare{% else %}attivare{% endif %} questo cliente?')">
+                                        <i class="fas fa-{% if cliente.attivo %}pause{% else %}play{% endif %} me-2"></i>
+                                        {% if cliente.attivo %}Disattiva{% else %}Attiva{% endif %} Cliente
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'anagrafica:elimina_cliente' cliente.pk %}"
+                                       onclick="return confirm('Sei sicuro di voler eliminare questo cliente? Questa azione non può essere annullata.')">
+                                        <i class="fas fa-trash me-2"></i>Elimina Cliente
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Colonna principale -->
+                <div class="col-md-8">
+                    <!-- Informazioni generali -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informazioni Generali
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Dati Anagrafici</h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-semibold">Nome/Ragione Sociale:</td>
+                                            <td>{{ cliente.nome }}</td>
+                                        </tr>
+                                        {% if cliente.zona %}
+                                        <tr>
+                                            <td class="fw-semibold">Zona:</td>
+                                            <td><span class="badge bg-info">{{ cliente.zona }}</span></td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if cliente.indirizzo %}
+                                        <tr>
+                                            <td class="fw-semibold">Indirizzo:</td>
+                                            <td>{{ cliente.indirizzo|linebreaks }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if cliente.citta or cliente.cap %}
+                                        <tr>
+                                            <td class="fw-semibold">Città:</td>
+                                            <td>
+                                                {{ cliente.citta|default:'' }}
+                                                {% if cliente.cap %} - {{ cliente.cap }}{% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Rappresentante</h6>
+                                    {% if cliente.rappresentante %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-user-tie text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ cliente.rappresentante }}</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ cliente.rappresentante.email|default:'N/A' }}
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-phone me-1"></i>{{ cliente.rappresentante.telefono|default:'N/A' }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Nessun rappresentante assegnato
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dati fiscali -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-invoice me-2"></i>Dati Fiscali
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        {% if cliente.partita_iva %}
+                                        <tr>
+                                            <td class="fw-semibold">Partita IVA:</td>
+                                            <td>
+                                                <code class="text-primary">{{ cliente.partita_iva }}</code>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if cliente.codice_fiscale %}
+                                        <tr>
+                                            <td class="fw-semibold">Codice Fiscale:</td>
+                                            <td>
+                                                <code class="text-success">{{ cliente.codice_fiscale }}</code>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        {% if cliente.codice_univoco %}
+                                        <tr>
+                                            <td class="fw-semibold">Codice Univoco:</td>
+                                            <td>{{ cliente.codice_univoco }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if cliente.pec %}
+                                        <tr>
+                                            <td class="fw-semibold">PEC:</td>
+                                            <td>
+                                                <a href="mailto:{{ cliente.pec }}" class="text-decoration-none">
+                                                    {{ cliente.pec }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Note -->
+                    {% if cliente.note %}
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>Note
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ cliente.note|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Stato e Badge -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                {% if cliente.attivo %}
+                                    <span class="badge bg-success fs-6 px-3 py-2">
+                                        <i class="fas fa-check-circle me-2"></i>Cliente Attivo
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6 px-3 py-2">
+                                        <i class="fas fa-times-circle me-2"></i>Cliente Inattivo
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contatti -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-address-book me-2"></i>Contatti
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-phone text-success me-3"></i>
+                                    <div>
+                                        <span class="fw-semibold">Telefono</span><br>
+                                        <a href="tel:{{ cliente.telefono }}" class="text-decoration-none">
+                                            {{ cliente.telefono }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-envelope text-primary me-3"></i>
+                                    <div>
+                                        <span class="fw-semibold">Email</span><br>
+                                        <a href="mailto:{{ cliente.email }}" class="text-decoration-none">
+                                            {{ cliente.email }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Condizioni commerciali -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-handshake me-2"></i>Condizioni Commerciali
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <span class="fw-semibold text-muted">Tipo di Pagamento</span><br>
+                                <span class="badge bg-info">{{ cliente.get_tipo_pagamento_display }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="fw-semibold text-muted">Limite di Credito</span><br>
+                                <span class="fs-5 fw-semibold text-{% if cliente.limite_credito > 0 %}warning{% else %}muted{% endif %}">
+                                    €{{ cliente.limite_credito|floatformat:2 }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header h5 {
+    font-weight: 600;
+}
+
+.table-borderless td {
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.table-borderless .fw-semibold {
+    color: #495057;
+    min-width: 120px;
+    vertical-align: top;
+}
+
+code {
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.badge.fs-6 {
+    font-size: 1rem !important;
+}
+
+.dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-group .btn {
+    border-radius: 6px;
+    margin-right: 0.5rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+</style>
+{% endblock %}

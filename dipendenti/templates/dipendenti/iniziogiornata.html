@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Inizio Giornata{% endblock %}
+
+{% block page_title %}Registrazione Inizio Giornata{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-success text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-play-circle me-2"></i>Inizio Giornata Lavorativa</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-4 text-gray-800 mb-2">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <h4>{% now "l, j F Y" %}</h4>
+                    <p class="lead text-gray-600" id="current-time">{% now "H:i:s" %}</p>
+                </div>
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-group">
+                                <label for="id_ora_inizio_mattina" class="form-label">Ora di inizio</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    {{ form.ora_inizio_mattina }}
+                                </div>
+                                <div class="form-text text-muted">L'ora corrente verrà impostata automaticamente.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-group">
+                                <label for="id_assenza" class="form-label">Registrazione assenza</label>
+                                {{ form.assenza|as_crispy_field }}
+                                <div class="form-text text-muted">
+                                    Seleziona "Nessuna assenza" se stai lavorando normalmente, altrimenti seleziona il tipo di assenza.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="notes-container" style="display: none;">
+                        <div class="col-md-12 mb-3">
+                            {{ form.nota_assenza|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-play me-2"></i>Inizia Giornata
+                        </button>
+                        <a href="{% url 'dipendenti:profilo' username=user.username %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Torna al Profilo
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aggiorna l'ora corrente
+    function updateCurrentTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('it-IT');
+        document.getElementById('current-time').textContent = timeString;
+        
+        // Aggiorna l'ora di inizio se il campo è vuoto
+        const startTimeInput = document.getElementById('id_ora_inizio_mattina');
+        if (!startTimeInput.value) {
+            // Formato HH:MM
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            startTimeInput.value = `${hours}:${minutes}`;
+        }
+    }
+    
+    // Mostra/nascondi il campo note in base al tipo di assenza
+    function toggleNotesField() {
+        const assenzaSelect = document.getElementById('id_assenza');
+        const notesContainer = document.getElementById('notes-container');
+        
+        if (assenzaSelect.value !== 'nessuna') {
+            notesContainer.style.display = 'block';
+        } else {
+            notesContainer.style.display = 'none';
+        }
+    }
+    
+    // Inizializza l'ora alla prima esecuzione
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+        
+        // Configura l'evento per il select di assenza
+        const assenzaSelect = document.getElementById('id_assenza');
+        assenzaSelect.addEventListener('change', toggleNotesField);
+        toggleNotesField(); // Esegui la prima volta per impostare lo stato iniziale
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Elimina Allegato{% endblock %}
+
+{% block page_title %}Conferma Eliminazione{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4 border-danger">
+            <div class="card-header py-3 bg-danger text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-exclamation-triangle me-2"></i>Conferma Eliminazione</h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-file-alt fa-4x text-danger mb-3"></i>
+                    <h4>Sei sicuro di voler eliminare questo allegato?</h4>
+                    <p class="lead text-muted">{{ object.nome }}</p>
+                    <p>
+                        <span class="badge bg-secondary">{{ object.get_tipo_display }}</span>
+                        <span class="badge bg-info">Caricato il {{ object.data_caricamento|date:"d/m/Y" }}</span>
+                    </p>
+                    
+                    {% if object.note %}
+                    <div class="alert alert-light text-start mt-3">
+                        <strong>Note:</strong><br>
+                        {{ object.note }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Questa azione non può essere annullata. L'allegato verrà eliminato permanentemente.
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash me-2"></i>Elimina Definitivamente
+                        </button>
+                        <a href="{% url 'dipendenti:vedidipendente' pk=object.dipendente.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Annulla
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

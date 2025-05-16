@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Anagrafica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .icon-large {
+        font-size: 2.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard Anagrafica</h1>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-plus"></i> Aggiungi
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'anagrafica:nuovo_rappresentante' %}">
+                    <i class="fas fa-user-tie"></i> Nuovo Rappresentante</a></li>
+                <li><a class="dropdown-item" href="{% url 'anagrafica:nuovo_cliente' %}">
+                    <i class="fas fa-building"></i> Nuovo Cliente</a></li>
+                <li><a class="dropdown-item" href="{% url 'anagrafica:nuovo_fornitore' %}">
+                    <i class="fas fa-truck"></i> Nuovo Fornitore</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Rappresentanti Attivi
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rappresentanti_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-primary" href="{% url 'anagrafica:elenco_rappresentanti' %}">Visualizza Dettagli</a>
+                    <div class="small text-primary">
+                        <i class="fas fa-angle-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Clienti Attivi
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ clienti_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-success" href="{% url 'anagrafica:elenco_clienti' %}">Visualizza Dettagli</a>
+                    <div class="small text-success">
+                        <i class="fas fa-angle-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Fornitori Attivi
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fornitori_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-info" href="{% url 'anagrafica:elenco_fornitori' %}">Visualizza Dettagli</a>
+                    <div class="small text-info">
+                        <i class="fas fa-angle-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Rappresentanti Senza Clienti
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rappresentanti_senza_clienti }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-warning" href="{% url 'anagrafica:elenco_rappresentanti' %}?has_clients=no">Visualizza</a>
+                    <div class="small text-warning">
+                        <i class="fas fa-angle-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <!-- Recent Rappresentanti -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Rappresentanti Recenti</h6>
+                    <a href="{% url 'anagrafica:elenco_rappresentanti' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye"></i> Vedi Tutti
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for rappresentante in recent_rappresentanti %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-primary">
+                                <i class="fas fa-user-tie text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">{{ rappresentante.data_creazione|date:"d/m/Y" }}</div>
+                            <a href="{% url 'anagrafica:dettaglio_rappresentante' rappresentante.pk %}" class="font-weight-bold">
+                                {{ rappresentante.nome }}
+                            </a>
+                            <div class="small text-muted">{{ rappresentante.zona|default:"Zona non specificata" }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Nessun rappresentante aggiunto di recente</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Clienti -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">Clienti Recenti</h6>
+                    <a href="{% url 'anagrafica:elenco_clienti' %}" class="btn btn-sm btn-success">
+                        <i class="fas fa-eye"></i> Vedi Tutti
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for cliente in recent_clienti %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-success">
+                                <i class="fas fa-building text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">{{ cliente.data_creazione|date:"d/m/Y" }}</div>
+                            <a href="{% url 'anagrafica:dettaglio_cliente' cliente.pk %}" class="font-weight-bold">
+                                {{ cliente.ragione_sociale }}
+                            </a>
+                            <div class="small text-muted">{{ cliente.città }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Nessun cliente aggiunto di recente</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Fornitori -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">Fornitori Recenti</h6>
+                    <a href="{% url 'anagrafica:elenco_fornitori' %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> Vedi Tutti
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for fornitore in recent_fornitori %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-info">
+                                <i class="fas fa-truck text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">{{ fornitore.data_creazione|date:"d/m/Y" }}</div>
+                            <a href="{% url 'anagrafica:dettaglio_fornitore' fornitore.pk %}" class="font-weight-bold">
+                                {{ fornitore.ragione_sociale }}
+                            </a>
+                            <div class="small text-muted">{{ fornitore.categoria|default:"Categoria non specificata" }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Nessun fornitore aggiunto di recente</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Azioni Rapide</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'anagrafica:api_search' %}" class="btn btn-outline-primary btn-lg d-block">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <br>Ricerca Globale
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'anagrafica:export_anagrafica' %}" class="btn btn-outline-success btn-lg d-block">
+                                <i class="fas fa-download fa-2x mb-2"></i>
+                                <br>Export Dati
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-info btn-lg d-block" onclick="printReports()">
+                                <i class="fas fa-file-pdf fa-2x mb-2"></i>
+                                <br>Reports PDF
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-warning btn-lg d-block" onclick="showStats()">
+                                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                                <br>Statistiche
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printReports() {
+    // Dropdown per scegliere tipo di report
+    const reportTypes = [
+        { name: 'Rappresentanti', url: '{% url "anagrafica:rappresentanti_pdf" %}' },
+        { name: 'Clienti', url: '{% url "anagrafica:clienti_pdf" %}' },
+        { name: 'Fornitori', url: '{% url "anagrafica:fornitori_pdf" %}' }
+    ];
+    
+    let options = reportTypes.map(report => 
+        `<li><a class="dropdown-item" href="${report.url}">${report.name}</a></li>`
+    ).join('');
+    
+    // Crea dropdown temporaneo
+    const dropdown = document.createElement('div');
+    dropdown.innerHTML = `
+        <div class="btn-group dropup">
+            <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Scegli Report
+            </button>
+            <ul class="dropdown-menu">${options}</ul>
+        </div>
+    `;
+    
+    document.body.appendChild(dropdown);
+    dropdown.querySelector('button').click();
+}
+
+function showStats() {
+    // Chiamata AJAX per statistics aggiornate
+    fetch('{% url "anagrafica:dashboard_stats_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            const statsHtml = `
+                <div class="modal fade" id="statsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Statistiche Anagrafica</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Rappresentanti</h6>
+                                        <p>Totali: ${data.rappresentanti.totali}</p>
+                                        <p>Attivi: ${data.rappresentanti.attivi}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Clienti</h6>
+                                        <p>Totali: ${data.clienti.totali}</p>
+                                        <p>Attivi: ${data.clienti.attivi}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Fornitori</h6>
+                                        <p>Totali: ${data.fornitori.totali}</p>
+                                        <p>Attivi: ${data.fornitori.attivi}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', statsHtml);
+            new bootstrap.Modal(document.getElementById('statsModal')).show();
+        });
+}
+</script>
+{% endblock %}

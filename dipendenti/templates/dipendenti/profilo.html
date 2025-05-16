@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profilo - {{ user.username }}{% endblock %}
+
+{% block page_title %}Il Mio Profilo{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Scheda Profilo -->
+    <div class="col-xl-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-primary text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-user-circle me-2"></i>Dati Personali</h6>
+            </div>
+            <div class="card-body text-center">
+                <!-- Foto profilo -->
+                <div class="mb-3">
+                    {% if user.foto_dipendente %}
+                    <img src="{{ user.foto_dipendente.url }}" class="img-thumbnail rounded-circle" 
+                         style="width: 180px; height: 180px; object-fit: cover;" alt="Foto profilo">
+                    {% else %}
+                    <div class="bg-light text-center p-4 rounded-circle d-inline-block" 
+                         style="width: 180px; height: 180px;">
+                        <i class="fas fa-user fa-5x text-secondary mt-3"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Info principali -->
+                <h4 class="mb-1">{{ user.get_full_name }}</h4>
+                <p class="text-muted mb-3">@{{ user.username }}</p>
+
+                <!-- Badge livello -->
+                <div class="mb-3">
+                    <span class="badge 
+                        {% if user.livello == 'totale' %}bg-danger
+                        {% elif user.livello == 'contabile' %}bg-info
+                        {% elif user.livello == 'operativo' %}bg-success
+                        {% elif user.livello == 'operatore' %}bg-secondary
+                        {% elif user.livello == 'rappresentante' %}bg-warning
+                        {% endif %} p-2 fs-6">
+                        {{ user.get_livello_display }}
+                    </span>
+                </div>
+
+                <!-- Info contatto -->
+                <div class="text-start mt-4">
+                    <p><i class="fas fa-envelope me-2"></i> {{ user.email|default:"Email non impostata" }}</p>
+                    <p><i class="fas fa-phone me-2"></i> {{ user.telefono|default:"Telefono non impostato" }}</p>
+                    <p><i class="fas fa-calendar me-2"></i> Data assunzione: {{ user.data_assunzione|date:"d/m/Y"|default:"Non specificata" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documenti -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-id-card me-2"></i>I Miei Documenti</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for allegato in allegati %}
+                    <a href="{{ allegato.file.url }}" class="list-group-item list-group-item-action" target="_blank">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ allegato.nome }}</h6>
+                            <small>{{ allegato.data_caricamento|date:"d/m/Y" }}</small>
+                        </div>
+                        <p class="mb-1"><i class="fas fa-file me-1"></i> {{ allegato.get_tipo_display }}</p>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-3">
+                        <p class="text-muted mb-0">Nessun documento disponibile</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonna Destra -->
+    <div class="col-xl-8">
+        <!-- Giornata Odierna -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calendar-day me-2"></i>Giornata di Oggi ({{ oggi|date:"d/m/Y" }})
+                </h6>
+                <div>
+                    {% if not giornata_oggi %}
+                    <a href="{% url 'dipendenti:iniziogiornata' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-play me-1"></i> Inizia Giornata
+                    </a>
+                    {% else %}
+                    <a href="{% url 'dipendenti:aggiornagiornata' pk=giornata_oggi.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i> Aggiorna Giornata
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if giornata_oggi %}
+                <!-- Dettagli giornata -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-left-primary shadow h-100 py-2 mb-3">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Mattina</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            {% if giornata_oggi.ora_inizio_mattina %}
+                                            <span class="text-success"><i class="fas fa-clock me-1"></i> {{ giornata_oggi.ora_inizio_mattina|time:"H:i" }}</span>
+                                            {% else %}
+                                            <span class="text-muted">Non iniziata</span>
+                                            {% endif %}
+                                            {% if giornata_oggi.ora_fine_mattina %}
+                                            <i class="fas fa-arrow-right mx-2"></i>
+                                            <span class="text-danger"><i class="fas fa-clock me-1"></i> {{ giornata_oggi.ora_fine_mattina|time:"H:i" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-sun fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-left-info shadow h-100 py-2 mb-3">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Pomeriggio</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            {% if giornata_oggi.ora_inizio_pomeriggio %}
+                                            <span class="text-success"><i class="fas fa-clock me-1"></i> {{ giornata_oggi.ora_inizio_pomeriggio|time:"H:i" }}</span>
+                                            {% else %}
+                                            <span class="text-muted">Non iniziato</span>
+                                            {% endif %}
+                                            {% if giornata_oggi.ora_fine_pomeriggio %}
+                                            <i class="fas fa-arrow-right mx-2"></i>
+                                            <span class="text-danger"><i class="fas fa-clock me-1"></i> {{ giornata_oggi.ora_fine_pomeriggio|time:"H:i" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-moon fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stato giornata -->
+                    <div class="col-12">
+                        <div class="alert {% if giornata_oggi.chiudi_giornata %}alert-success{% else %}alert-warning{% endif %} mb-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    {% if giornata_oggi.chiudi_giornata %}
+                                    <i class="fas fa-check-circle me-2"></i> Giornata chiusa
+                                    {% else %}
+                                    <i class="fas fa-exclamation-circle me-2"></i> Giornata in corso
+                                    {% endif %}
+                                    
+                                    {% if giornata_oggi.assenza != 'nessuna' %}
+                                    <span class="badge bg-warning ms-2">{{ giornata_oggi.get_assenza_display }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if not giornata_oggi.chiudi_giornata %}
+                                <a href="{% url 'dipendenti:aggiornagiornata' pk=giornata_oggi.pk %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check me-1"></i> Chiudi Giornata
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Nessuna giornata iniziata -->
+                <div class="alert alert-info text-center mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Non hai ancora iniziato la giornata di oggi.
+                    <div class="mt-3">
+                        <a href="{% url 'dipendenti:iniziogiornata' %}" class="btn btn-success">
+                            <i class="fas fa-play me-1"></i> Inizia Giornata
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Riepilogo ore -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-left-primary shadow h-100 py-2 mb-4">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Ore Settimanali</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{ ore_settimanali|default:"00:00:00" }}
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-left-success shadow h-100 py-2 mb-4">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Ore Mensili</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{ ore_mensili|default:"00:00:00" }}
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Presenze Recenti -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-history me-2"></i>Presenze Recenti</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="tabella-presenze" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Orari Mattina</th>
+                                <th>Orari Pomeriggio</th>
+                                <th>Stato</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for giornata in giornate_recenti %}
+                            <tr>
+                                <td>{{ giornata.data|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if giornata.ora_inizio_mattina %}
+                                    {{ giornata.ora_inizio_mattina|time:"H:i" }}
+                                    {% if giornata.ora_fine_mattina %}
+                                    - {{ giornata.ora_fine_mattina|time:"H:i" }}
+                                    {% endif %}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if giornata.ora_inizio_pomeriggio %}
+                                    {{ giornata.ora_inizio_pomeriggio|time:"H:i" }}
+                                    {% if giornata.ora_fine_pomeriggio %}
+                                    - {{ giornata.ora_fine_pomeriggio|time:"H:i" }}
+                                    {% endif %}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if giornata.assenza != 'nessuna' %}
+                                    <span class="badge bg-warning">{{ giornata.get_assenza_display }}</span>
+                                    {% elif giornata.chiudi_giornata %}
+                                    <span class="badge bg-success">Completata</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">In corso</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if not giornata.chiudi_giornata and giornata.data == oggi %}
+                                    <a href="{% url 'dipendenti:aggiornagiornata' pk=giornata.pk %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="fas fa-lock"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <p class="text-muted mb-0">Nessuna presenza registrata</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#tabella-presenze').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/it-IT.json',
+            },
+            responsive: true,
+            paging: true,
+            ordering: true,
+            info: true,
+            lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "Tutti"]],
+        });
+    });
+</script>
+{% endblock %}

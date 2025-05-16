@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Report Mensile Ore{% endblock %}
+
+{% block page_title %}Generazione Report Ore Lavorate{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-primary text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-file-pdf me-2"></i>Report Mensile Ore Lavorate</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                        <p class="lead">Genera un report dettagliato delle ore lavorate per un dipendente in un periodo specifico.</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'dipendenti:giornatemesedipendente' %}">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {{ form.dipendente|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.data_inizio|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.data_fine|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-file-download me-2"></i>Genera Report PDF
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-light">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i> Il report include tutte le giornate lavorative nel periodo specificato, con il calcolo delle ore totali.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inizializza date predefinite
+        const oggi = new Date();
+        const inizioMese = new Date(oggi.getFullYear(), oggi.getMonth(), 1);
+        const fineMese = new Date(oggi.getFullYear(), oggi.getMonth() + 1, 0);
+        
+        // Formatta le date in YYYY-MM-DD (formato HTML5 date input)
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        // Imposta le date predefinite nei campi se sono vuoti
+        const dataInizioInput = document.getElementById('id_data_inizio');
+        const dataFineInput = document.getElementById('id_data_fine');
+        
+        if (!dataInizioInput.value) {
+            dataInizioInput.value = formatDate(inizioMese);
+        }
+        
+        if (!dataFineInput.value) {
+            dataFineInput.value = formatDate(fineMese);
+        }
+        
+        // Validazione date
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            const dataInizio = new Date(dataInizioInput.value);
+            const dataFine = new Date(dataFineInput.value);
+            
+            if (dataInizio > dataFine) {
+                alert('La data di inizio deve essere precedente alla data di fine.');
+                event.preventDefault();
+            }
+            
+            // Limita il periodo a massimo 3 mesi
+            const tresMesi = 90 * 24 * 60 * 60 * 1000; // 90 giorni in millisecondi
+            if ((dataFine - dataInizio) > tresMesi) {
+                alert('Il periodo selezionato non può superare i 3 mesi.');
+                event.preventDefault();
+            }
+        });
+        
+        // Migliora il selettore dipendente con Select2
+        $('#id_dipendente').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Seleziona un dipendente',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}

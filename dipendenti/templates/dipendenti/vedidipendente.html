@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Dettagli Dipendente{% endblock %}
+
+{% block page_title %}Profilo Dipendente{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Intestazione del profilo -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-primary text-white">
+            <h5 class="m-0 font-weight-bold">
+                <i class="fas fa-user-circle me-2"></i>{{ dipen.get_full_name|default:dipen.username }}
+            </h5>
+            <div>
+                <a href="{% url 'dipendenti:aggiornadipendente' pk=dipen.pk %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-edit me-1"></i> Modifica
+                </a>
+                <a href="{% url 'dipendenti:elencodipendenti' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Torna all'elenco
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Foto dipendente -->
+                <div class="col-md-3 text-center mb-4">
+                    {% if dipen.foto_dipendente %}
+                    <img src="{{ dipen.foto_dipendente.url }}" class="img-thumbnail rounded-circle" style="width: 200px; height: 200px; object-fit: cover;" alt="Foto dipendente">
+                    {% else %}
+                    <div class="bg-light text-center p-5 rounded-circle d-inline-block" style="width: 200px; height: 200px;">
+                        <i class="fas fa-user fa-5x text-secondary mt-4"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <span class="badge bg-{% if dipen.is_active %}success{% else %}danger{% endif %} p-2 fs-6 mb-1 d-block">
+                            {% if dipen.is_active %}Attivo{% else %}Disattivato{% endif %}
+                        </span>
+
+                        <span class="badge 
+                            {% if dipen.livello == 'totale' %}bg-danger
+                            {% elif dipen.livello == 'contabile' %}bg-info
+                            {% elif dipen.livello == 'operativo' %}bg-success
+                            {% elif dipen.livello == 'operatore' %}bg-secondary
+                            {% elif dipen.livello == 'rappresentante' %}bg-warning
+                            {% endif %} p-2 fs-6 d-block">
+                            {{ dipen.get_livello_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Dati anagrafici -->
+                <div class="col-md-9">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-id-card me-2"></i>Dati Personali</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th class="w-25">Username:</th>
+                                    <td>{{ dipen.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nome:</th>
+                                    <td>{{ dipen.first_name|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cognome:</th>
+                                    <td>{{ dipen.last_name|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>{{ dipen.email|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Telefono:</th>
+                                    <td>{{ dipen.telefono|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Indirizzo:</th>
+                                    <td>{{ dipen.indirizzo|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Data di nascita:</th>
+                                    <td>{{ dipen.data_nascita|date:"d/m/Y"|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Data assunzione:</th>
+                                    <td>{{ dipen.data_assunzione|date:"d/m/Y"|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-file-alt me-2"></i>Documenti</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th class="w-25">Codice Fiscale:</th>
+                                    <td>{{ dipen.CF|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Carta d'identità:</th>
+                                    <td>{{ dipen.carta_d_identità|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Scadenza CI:</th>
+                                    <td>{{ dipen.data_scadenza_ci|date:"d/m/Y"|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Patente:</th>
+                                    <td>{{ dipen.patente_di_guida|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Scadenza patente:</th>
+                                    <td>{{ dipen.data_scadenza_patente|date:"d/m/Y"|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Categorie patente:</th>
+                                    <td>{{ dipen.categorie_patente|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pos. INAIL:</th>
+                                    <td>{{ dipen.posizione_inail|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pos. INPS:</th>
+                                    <td>{{ dipen.posizione_inps|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Note -->
+                    {% if dipen.note %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-sticky-note me-2"></i>Note</h5>
+                            <div class="p-3 bg-light rounded">
+                                {{ dipen.note|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allegati -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-paperclip me-2"></i>Documenti Allegati</h6>
+                    {% if user.livello == 'totale' or user.livello == 'contabile' %}
+                    <a href="{% url 'dipendenti:nuovo_allegato' dipendente_id=dipen.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Nuovo Allegato
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="tabellaAllegati" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>Data caricamento</th>
+                                    <th>Note</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for allegato in allegati %}
+                                <tr>
+                                    <td>{{ allegato.nome }}</td>
+                                    <td>{{ allegato.get_tipo_display }}</td>
+                                    <td>{{ allegato.data_caricamento|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ allegato.note|truncatechars:30|default:"-" }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ allegato.file.url }}" class="btn btn-primary btn-sm" target="_blank" title="Visualizza">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ allegato.file.url }}" class="btn btn-success btn-sm" download title="Scarica">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            {% if user.livello == 'totale' or user.livello == 'contabile' %}
+                                            <a href="{% url 'dipendenti:elimina_allegato' pk=allegato.pk %}" class="btn btn-danger btn-sm" title="Elimina">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        <p class="text-muted">Nessun allegato disponibile</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presenze recenti -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-calendar-check me-2"></i>Presenze Recenti</h6>
+                    {% if user.livello == 'totale' %}
+                    <a href="{% url 'dipendenti:stampa_mese_dipendente' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-file-pdf me-1"></i> Report Mensile
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Inizio Mattina</th>
+                                    <th>Fine Mattina</th>
+                                    <th>Inizio Pomeriggio</th>
+                                    <th>Fine Pomeriggio</th>
+                                    <th>Assenza</th>
+                                    <th>Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for giornata in giornate_recenti %}
+                                <tr>
+                                    <td>{{ giornata.data|date:"d/m/Y" }}</td>
+                                    <td>{{ giornata.ora_inizio_mattina|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ giornata.ora_fine_mattina|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ giornata.ora_inizio_pomeriggio|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ giornata.ora_fine_pomeriggio|time:"H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if giornata.assenza != 'nessuna' %}
+                                        <span class="badge bg-warning">{{ giornata.get_assenza_display }}</span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if giornata.chiudi_giornata %}
+                                        <span class="badge bg-success">Chiusa</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Aperta</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <p class="text-muted">Nessuna presenza registrata</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Inizializza DataTables per la tabella allegati
+        $('#tabellaAllegati').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/it-IT.json',
+            },
+            responsive: true,
+            paging: true,
+            ordering: true,
+            info: true,
+            lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "Tutti"]],
+        });
+    });
+</script>
+{% endblock %}

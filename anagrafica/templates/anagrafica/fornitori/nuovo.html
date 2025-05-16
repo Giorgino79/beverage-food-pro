@@ -1,0 +1,553 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ form.instance.pk|yesno:"Modifica Fornitore,Nuovo Fornitore" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>
+                        {{ form.instance.pk|yesno:"Modifica Fornitore,Nuovo Fornitore" }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Errori nella compilazione:</h5>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-tabs mb-4" id="fornitoreTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#general" type="button" role="tab">
+                                    <i class="fas fa-info-circle me-2"></i>Informazioni Generali
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="fiscal-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#fiscal" type="button" role="tab">
+                                    <i class="fas fa-file-invoice me-2"></i>Dati Fiscali e Bancari
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="commercial-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#commercial" type="button" role="tab">
+                                    <i class="fas fa-handshake me-2"></i>Dati Commerciali
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="fornitoreTabContent">
+                            <!-- Informazioni Generali -->
+                            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.nome.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-building me-2 text-warning"></i>Nome/Ragione Sociale *
+                                            </label>
+                                            <input type="text" name="{{ form.nome.name }}" 
+                                                   class="form-control{% if form.nome.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.nome.id_for_label }}" 
+                                                   value="{{ form.nome.value|default:'' }}"
+                                                   required>
+                                            {% if form.nome.errors %}
+                                                <div class="invalid-feedback">{{ form.nome.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.indirizzo.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-home me-2 text-info"></i>Indirizzo
+                                            </label>
+                                            <textarea name="{{ form.indirizzo.name }}" 
+                                                      class="form-control{% if form.indirizzo.errors %} is-invalid{% endif %}"
+                                                      id="{{ form.indirizzo.id_for_label }}" 
+                                                      rows="3">{{ form.indirizzo.value|default:'' }}</textarea>
+                                            {% if form.indirizzo.errors %}
+                                                <div class="invalid-feedback">{{ form.indirizzo.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.citta.id_for_label }}" class="form-label fw-semibold">
+                                                        <i class="fas fa-city me-2"></i>Città
+                                                    </label>
+                                                    <input type="text" name="{{ form.citta.name }}" 
+                                                           class="form-control{% if form.citta.errors %} is-invalid{% endif %}"
+                                                           id="{{ form.citta.id_for_label }}" 
+                                                           value="{{ form.citta.value|default:'' }}">
+                                                    {% if form.citta.errors %}
+                                                        <div class="invalid-feedback">{{ form.citta.errors.0 }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.cap.id_for_label }}" class="form-label fw-semibold">
+                                                        <i class="fas fa-map-pin me-2"></i>CAP
+                                                    </label>
+                                                    <input type="text" name="{{ form.cap.name }}" 
+                                                           class="form-control{% if form.cap.errors %} is-invalid{% endif %}"
+                                                           id="{{ form.cap.id_for_label }}" 
+                                                           value="{{ form.cap.value|default:'' }}">
+                                                    {% if form.cap.errors %}
+                                                        <div class="invalid-feedback">{{ form.cap.errors.0 }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.telefono.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-phone me-2 text-success"></i>Telefono *
+                                            </label>
+                                            <input type="tel" name="{{ form.telefono.name }}" 
+                                                   class="form-control{% if form.telefono.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.telefono.id_for_label }}" 
+                                                   value="{{ form.telefono.value|default:'' }}"
+                                                   required>
+                                            {% if form.telefono.errors %}
+                                                <div class="invalid-feedback">{{ form.telefono.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-envelope me-2 text-primary"></i>Email *
+                                            </label>
+                                            <input type="email" name="{{ form.email.name }}" 
+                                                   class="form-control{% if form.email.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.email.id_for_label }}" 
+                                                   value="{{ form.email.value|default:'' }}"
+                                                   required>
+                                            {% if form.email.errors %}
+                                                <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.categoria.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-tags me-2 text-info"></i>Categoria Merceologica
+                                            </label>
+                                            <select name="{{ form.categoria.name }}" 
+                                                    class="form-select{% if form.categoria.errors %} is-invalid{% endif %}"
+                                                    id="{{ form.categoria.id_for_label }}">
+                                                {% for value, label in form.categoria.field.choices %}
+                                                    <option value="{{ value }}" 
+                                                            {% if form.categoria.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                                        {{ label }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if form.categoria.errors %}
+                                                <div class="invalid-feedback">{{ form.categoria.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dati Fiscali e Bancari -->
+                            <div class="tab-pane fade" id="fiscal" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="text-success border-bottom pb-2 mb-3">
+                                            <i class="fas fa-file-invoice-dollar me-2"></i>Dati Fiscali
+                                        </h5>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.partita_iva.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-hashtag me-2 text-primary"></i>Partita IVA *
+                                            </label>
+                                            <input type="text" name="{{ form.partita_iva.name }}" 
+                                                   class="form-control{% if form.partita_iva.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.partita_iva.id_for_label }}" 
+                                                   value="{{ form.partita_iva.value|default:'' }}"
+                                                   placeholder="IT12345678901"
+                                                   required>
+                                            {% if form.partita_iva.errors %}
+                                                <div class="invalid-feedback">{{ form.partita_iva.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="form-text">Formato: IT + 11 cifre</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.codice_fiscale.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-id-card me-2 text-success"></i>Codice Fiscale
+                                            </label>
+                                            <input type="text" name="{{ form.codice_fiscale.name }}" 
+                                                   class="form-control{% if form.codice_fiscale.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.codice_fiscale.id_for_label }}" 
+                                                   value="{{ form.codice_fiscale.value|default:'' }}"
+                                                   placeholder="RSSMRA85M01H501Z">
+                                            {% if form.codice_fiscale.errors %}
+                                                <div class="invalid-feedback">{{ form.codice_fiscale.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="form-text">16 caratteri per persone fisiche, 11 per aziende</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="fas fa-university me-2"></i>Dati Bancari
+                                        </h5>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.iban.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-credit-card me-2 text-warning"></i>IBAN
+                                            </label>
+                                            <input type="text" name="{{ form.iban.name }}" 
+                                                   class="form-control{% if form.iban.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.iban.id_for_label }}" 
+                                                   value="{{ form.iban.value|default:'' }}"
+                                                   placeholder="IT60X0542811101000000123456">
+                                            {% if form.iban.errors %}
+                                                <div class="invalid-feedback">{{ form.iban.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="form-text">IBAN per bonifici (IT + 25 caratteri)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dati Commerciali -->
+                            <div class="tab-pane fade" id="commercial" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="text-warning border-bottom pb-2 mb-3">
+                                            <i class="fas fa-handshake me-2"></i>Condizioni Commerciali
+                                        </h5>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.tipo_pagamento.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-credit-card me-2 text-primary"></i>Tipo di Pagamento
+                                            </label>
+                                            <select name="{{ form.tipo_pagamento.name }}" 
+                                                    class="form-select{% if form.tipo_pagamento.errors %} is-invalid{% endif %}"
+                                                    id="{{ form.tipo_pagamento.id_for_label }}">
+                                                {% for value, label in form.tipo_pagamento.field.choices %}
+                                                    <option value="{{ value }}" 
+                                                            {% if form.tipo_pagamento.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                                        {{ label }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if form.tipo_pagamento.errors %}
+                                                <div class="invalid-feedback">{{ form.tipo_pagamento.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="{{ form.attivo.name }}" 
+                                                       class="form-check-input{% if form.attivo.errors %} is-invalid{% endif %}"
+                                                       id="{{ form.attivo.id_for_label }}" 
+                                                       {% if form.attivo.value %}checked{% endif %}>
+                                                <label class="form-check-label fw-semibold" for="{{ form.attivo.id_for_label }}">
+                                                    <i class="fas fa-toggle-on me-2 text-success"></i>Fornitore attivo
+                                                </label>
+                                                {% if form.attivo.errors %}
+                                                    <div class="invalid-feedback d-block">{{ form.attivo.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.note.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-sticky-note me-2 text-secondary"></i>Note
+                                            </label>
+                                            <textarea name="{{ form.note.name }}" 
+                                                      class="form-control{% if form.note.errors %} is-invalid{% endif %}"
+                                                      id="{{ form.note.id_for_label }}" 
+                                                      rows="4" 
+                                                      placeholder="Note aggiuntive...">{{ form.note.value|default:'' }}</textarea>
+                                            {% if form.note.errors %}
+                                                <div class="invalid-feedback">{{ form.note.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5 class="text-info border-bottom pb-2 mb-3">
+                                            <i class="fas fa-user-tie me-2"></i>Referente Principale
+                                        </h5>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.referente_nome.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-user me-2 text-info"></i>Nome Referente
+                                            </label>
+                                            <input type="text" name="{{ form.referente_nome.name }}" 
+                                                   class="form-control{% if form.referente_nome.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.referente_nome.id_for_label }}" 
+                                                   value="{{ form.referente_nome.value|default:'' }}">
+                                            {% if form.referente_nome.errors %}
+                                                <div class="invalid-feedback">{{ form.referente_nome.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.referente_telefono.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-phone me-2 text-success"></i>Telefono Referente
+                                            </label>
+                                            <input type="tel" name="{{ form.referente_telefono.name }}" 
+                                                   class="form-control{% if form.referente_telefono.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.referente_telefono.id_for_label }}" 
+                                                   value="{{ form.referente_telefono.value|default:'' }}">
+                                            {% if form.referente_telefono.errors %}
+                                                <div class="invalid-feedback">{{ form.referente_telefono.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="{{ form.referente_email.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-envelope me-2 text-primary"></i>Email Referente
+                                            </label>
+                                            <input type="email" name="{{ form.referente_email.name }}" 
+                                                   class="form-control{% if form.referente_email.errors %} is-invalid{% endif %}"
+                                                   id="{{ form.referente_email.id_for_label }}" 
+                                                   value="{{ form.referente_email.value|default:'' }}">
+                                            {% if form.referente_email.errors %}
+                                                <div class="invalid-feedback">{{ form.referente_email.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'anagrafica:elenco_fornitori' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Annulla
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-2"></i>Salva Fornitore
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validazione Partita IVA in tempo reale
+    const pIvaField = document.getElementById('{{ form.partita_iva.id_for_label }}');
+    if (pIvaField) {
+        pIvaField.addEventListener('blur', function() {
+            validatePartitaIva(this);
+        });
+    }
+
+    // Validazione Codice Fiscale in tempo reale
+    const cfField = document.getElementById('{{ form.codice_fiscale.id_for_label }}');
+    if (cfField) {
+        cfField.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+        cfField.addEventListener('blur', function() {
+            validateCodiceFiscale(this);
+        });
+    }
+
+    // Validazione IBAN in tempo reale
+    const ibanField = document.getElementById('{{ form.iban.id_for_label }}');
+    if (ibanField) {
+        ibanField.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/\s/g, '');
+        });
+        ibanField.addEventListener('blur', function() {
+            validateIban(this);
+        });
+    }
+
+    // Auto-format CAP
+    const capField = document.getElementById('{{ form.cap.id_for_label }}');
+    if (capField) {
+        capField.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 5);
+        });
+    }
+
+    function validatePartitaIva(field) {
+        const value = field.value.trim();
+        if (!value) return;
+
+        // Rimuovi spazi e converti in maiuscolo
+        const cleanValue = value.replace(/\s/g, '').toUpperCase();
+        
+        // Controlla formato base (IT + 11 cifre)
+        const regex = /^IT\d{11}$/;
+        
+        if (!regex.test(cleanValue)) {
+            field.classList.add('is-invalid');
+            showFieldError(field, 'Formato P.IVA non valido (es: IT12345678901)');
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            hideFieldError(field);
+            field.value = cleanValue;
+        }
+    }
+
+    function validateCodiceFiscale(field) {
+        const value = field.value.trim();
+        if (!value) return;
+
+        // Rimuovi spazi e converti in maiuscolo
+        const cleanValue = value.replace(/\s/g, '').toUpperCase();
+        
+        // Pattern per CF (16 caratteri per persone fisiche, 11 per aziende)
+        const regexPersona = /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/;
+        const regexAzienda = /^\d{11}$/;
+        
+        if (!regexPersona.test(cleanValue) && !regexAzienda.test(cleanValue)) {
+            field.classList.add('is-invalid');
+            showFieldError(field, 'Formato CF non valido');
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            hideFieldError(field);
+            field.value = cleanValue;
+        }
+    }
+
+    function validateIban(field) {
+        const value = field.value.trim();
+        if (!value) return;
+
+        // Rimuovi spazi e converti in maiuscolo
+        const cleanValue = value.replace(/\s/g, '').toUpperCase();
+        
+        // Pattern IBAN italiano (IT + 25 caratteri)
+        const regex = /^IT\d{2}[A-Z]\d{5}\d{10}[A-Z0-9]{12}$/;
+        
+        if (!regex.test(cleanValue)) {
+            field.classList.add('is-invalid');
+            showFieldError(field, 'Formato IBAN non valido (es: IT60X0542811101000000123456)');
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            hideFieldError(field);
+            field.value = cleanValue;
+        }
+    }
+
+    function showFieldError(field, message) {
+        const feedback = field.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.textContent = message;
+        }
+    }
+
+    function hideFieldError(field) {
+        const feedback = field.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.textContent = '';
+        }
+    }
+
+    // Evidenzia tab con errori
+    function highlightTabsWithErrors() {
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabPanes.forEach(pane => {
+            const hasErrors = pane.querySelector('.is-invalid');
+            const tabButton = document.querySelector(`[data-bs-target="#${pane.id}"]`);
+            if (hasErrors && tabButton) {
+                tabButton.classList.add('text-danger');
+                tabButton.innerHTML = tabButton.innerHTML + ' <i class="fas fa-exclamation-circle"></i>';
+            }
+        });
+    }
+
+    highlightTabsWithErrors();
+});
+</script>
+
+<style>
+.nav-tabs .nav-link {
+    border-radius: 8px 8px 0 0;
+    margin-right: 5px;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #ffc107;
+    color: #000;
+    border-color: #ffc107;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    border-color: #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.form-control.is-valid, .form-select.is-valid {
+    border-color: #198754;
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.btn-warning {
+    border-radius: 6px;
+    color: #000;
+}
+
+.btn-outline-secondary {
+    border-radius: 6px;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.text-primary { color: #0d6efd !important; }
+.text-success { color: #198754 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-info { color: #0dcaf0 !important; }
+.text-danger { color: #dc3545 !important; }
+.text-secondary { color: #6c757d !important; }
+
+.fw-semibold {
+    font-weight: 600;
+}
+
+.border-bottom {
+    border-bottom: 2px solid #dee2e6 !important;
+}
+</style>
+{% endblock %}

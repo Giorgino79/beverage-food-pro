@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Elenco Rappresentanti{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-responsive {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .status-badge {
+        font-size: 0.8rem;
+    }
+    .search-box {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .action-buttons .btn {
+        margin-right: 0.2rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Elenco Rappresentanti</h1>
+            <p class="text-muted">Gestione rappresentanti commerciali</p>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{% url 'anagrafica:nuovo_rappresentante' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuovo Rappresentante
+            </a>
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-cog"></i> Azioni
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'anagrafica:export_anagrafica' %}?tipo=rappresentanti">
+                    <i class="fas fa-download"></i> Esporta CSV
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'anagrafica:rappresentanti_pdf' %}">
+                    <i class="fas fa-file-pdf"></i> Report PDF
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="refreshStats()">
+                    <i class="fas fa-sync"></i> Aggiorna Statistiche
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Search/Filter Section -->
+    <div class="search-box shadow-sm">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Cerca</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ request.GET.search }}" placeholder="Nome, email, telefono...">
+            </div>
+            <div class="col-md-3">
+                <label for="zona" class="form-label">Zona</label>
+                <select class="form-select" id="zona" name="zona">
+                    <option value="">Tutte le zone</option>
+                    {% for zona in zone_list %}
+                    <option value="{{ zona }}" {% if request.GET.zona == zona %}selected{% endif %}>
+                        {{ zona }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="attivo" class="form-label">Stato</label>
+                <select class="form-select" id="attivo" name="attivo">
+                    <option value="True" {% if request.GET.attivo != 'False' %}selected{% endif %}>Attivi</option>
+                    <option value="False" {% if request.GET.attivo == 'False' %}selected{% endif %}>Non attivi</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Cerca
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                    Totale: <strong>{{ total_count }}</strong> rappresentanti
+                    {% if request.GET.search or request.GET.zona %}
+                    (filtrati)
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <div id="bulk-actions" class="d-none">
+                <button class="btn btn-sm btn-warning" onclick="bulkActivate()">
+                    <i class="fas fa-check"></i> Attiva Selezionati
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="bulkDeactivate()">
+                    <i class="fas fa-times"></i> Disattiva Selezionati
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                </div>
+                            </th>
+                            <th>Nome</th>
+                            <th>Ragione Sociale</th>
+                            <th>Email</th>
+                            <th>Telefono</th>
+                            <th>Zona</th>
+                            <th>Clienti</th>
+                            <th>Provvigione</th>
+                            <th>Stato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rappresentante in rappresentanti %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ rappresentante.id }}" 
+                                           name="selected_items">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        {% if rappresentante.user.foto_dipendente %}
+                                        <img src="{{ rappresentante.user.foto_dipendente.url }}" 
+                                             alt="{{ rappresentante.nome }}" 
+                                             class="rounded-circle" width="40" height="40">
+                                        {% else %}
+                                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong>{{ rappresentante.nome }}</strong>
+                                        {% if rappresentante.user %}
+                                        <br>
+                                        <small class="text-muted">{{ rappresentante.user.username }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ rappresentante.ragione_sociale }}</td>
+                            <td>
+                                <a href="mailto:{{ rappresentante.email }}" class="text-decoration-none">
+                                    {{ rappresentante.email }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="tel:{{ rappresentante.telefono }}" class="text-decoration-none">
+                                    {{ rappresentante.telefono }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if rappresentante.zona %}
+                                <span class="badge bg-light text-dark">{{ rappresentante.zona }}</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rappresentante.clienti_count > 0 %}
+                                <a href="{% url 'anagrafica:elenco_clienti' %}?rappresentante={{ rappresentante.id }}" 
+                                   class="badge bg-success text-white">
+                                    {{ rappresentante.clienti_count }} client{{ rappresentante.clienti_count|pluralize:'e,i' }}
+                                </a>
+                                {% else %}
+                                <span class="badge bg-light text-muted">0 clienti</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ rappresentante.percentuale_sulle_vendite }}%</td>
+                            <td>
+                                {% if rappresentante.attivo %}
+                                <span class="badge bg-success status-badge">
+                                    <i class="fas fa-check"></i> Attivo
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger status-badge">
+                                    <i class="fas fa-times"></i> Non attivo
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'anagrafica:dettaglio_rappresentante' rappresentante.pk %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Visualizza">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'anagrafica:modifica_rappresentante' rappresentante.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary" title="Modifica">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                            onclick="toggleActive({{ rappresentante.pk }}, {{ rappresentante.attivo|yesno:'false,true' }})"
+                                            title="{% if rappresentante.attivo %}Disattiva{% else %}Attiva{% endif %}">
+                                        <i class="fas fa-toggle-{% if rappresentante.attivo %}on{% else %}off{% endif %}"></i>
+                                    </button>
+                                    {% if not rappresentante.clienti_count %}
+                                    <a href="{% url 'anagrafica:elimina_rappresentante' rappresentante.pk %}" 
+                                       class="btn btn-sm btn-outline-danger" title="Elimina">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-3"></i>
+                                <br>
+                                {% if request.GET.search %}
+                                Nessun rappresentante trovato con i criteri specificati.
+                                {% else %}
+                                Nessun rappresentante presente. <a href="{% url 'anagrafica:nuovo_rappresentante' %}">Creane uno nuovo</a>.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.zona %}zona={{ request.GET.zona }}&{% endif %}{% if request.GET.attivo %}attivo={{ request.GET.attivo }}&{% endif %}page=1">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.zona %}zona={{ request.GET.zona }}&{% endif %}{% if request.GET.attivo %}attivo={{ request.GET.attivo }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Pagina {{ page_obj.number }} di {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.zona %}zona={{ request.GET.zona }}&{% endif %}{% if request.GET.attivo %}attivo={{ request.GET.attivo }}&{% endif %}page={{ page_obj.next_page_number }}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.zona %}zona={{ request.GET.zona }}&{% endif %}{% if request.GET.attivo %}attivo={{ request.GET.attivo }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select all functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="selected_items"]');
+    const bulkActions = document.getElementById('bulk-actions');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    
+    if (this.checked) {
+        bulkActions.classList.remove('d-none');
+    } else {
+        bulkActions.classList.add('d-none');
+    }
+});
+
+// Show bulk actions when any checkbox is selected
+document.querySelectorAll('input[name="selected_items"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const selected = document.querySelectorAll('input[name="selected_items"]:checked');
+        const bulkActions = document.getElementById('bulk-actions');
+        
+        if (selected.length > 0) {
+            bulkActions.classList.remove('d-none');
+        } else {
+            bulkActions.classList.add('d-none');
+        }
+    });
+});
+
+// Toggle active/inactive status
+function toggleActive(id, newStatus) {
+    if (confirm('Sei sicuro di voler ' + (newStatus ? 'attivare' : 'disattivare') + ' questo rappresentante?')) {
+        // AJAX call to toggle status
+        fetch(`{% url 'anagrafica:toggle_attivo' 'rappresentante' 0 %}`.replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Errore durante l\'operazione');
+            }
+        });
+    }
+}
+
+// Bulk activate
+function bulkActivate() {
+    const selected = document.querySelectorAll('input[name="selected_items"]:checked');
+    const ids = Array.from(selected).map(checkbox => checkbox.value);
+    
+    if (ids.length === 0) {
+        alert('Seleziona almeno un rappresentante');
+        return;
+    }
+    
+    if (confirm(`Attivare ${ids.length} rappresentanti selezionati?`)) {
+        // AJAX call for bulk activation
+        fetch('{% url "anagrafica:attiva_multipli" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'tipo': 'rappresentante',
+                'ids': ids
+            })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Bulk deactivate
+function bulkDeactivate() {
+    const selected = document.querySelectorAll('input[name="selected_items"]:checked');
+    const ids = Array.from(selected).map(checkbox => checkbox.value);
+    
+    if (ids.length === 0) {
+        alert('Seleziona almeno un rappresentante');
+        return;
+    }
+    
+    if (confirm(`Disattivare ${ids.length} rappresentanti selezionati?`)) {
+        fetch('{% url "anagrafica:disattiva_multipli" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'tipo': 'rappresentante',
+                'ids': ids
+            })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Refresh stats
+function refreshStats() {
+    fetch('{% url "anagrafica:dashboard_stats_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            // Update any stats display if needed
+            alert('Statistiche aggiornate!');
+        });
+}
+</script>
+{% endblock %}

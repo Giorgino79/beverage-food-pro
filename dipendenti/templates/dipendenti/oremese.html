@@ -1,0 +1,85 @@
+{% extends "base_pdf.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="report-header">
+        <h2>Report Ore Lavorate</h2>
+        <p><strong>Dipendente:</strong> {{ dipendente.get_full_name|default:dipendente.username }}</p>
+        <p><strong>Periodo:</strong> Dal {{ data_inizio|date:"d/m/Y" }} al {{ data_fine|date:"d/m/Y" }}</p>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Giorno</th>
+                <th>Mattina</th>
+                <th>Pomeriggio</th>
+                <th>Assenza</th>
+                <th>Ore Totali</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in giornate %}
+            <tr class="{% if g.assenza != 'nessuna' %}table-row-warning{% endif %}">
+                <td>{{ g.data|date:"d/m/Y" }}</td>
+                <td>{{ g.data|date:"l"|title }}</td>
+                <td>
+                    {% if g.ora_inizio_mattina and g.ora_fine_mattina %}
+                    {{ g.ora_inizio_mattina|time:"H:i" }} - {{ g.ora_fine_mattina|time:"H:i" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if g.ora_inizio_pomeriggio and g.ora_fine_pomeriggio %}
+                    {{ g.ora_inizio_pomeriggio|time:"H:i" }} - {{ g.ora_fine_pomeriggio|time:"H:i" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if g.assenza != 'nessuna' %}
+                    {{ g.get_assenza_display }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="text-right">{{ g.daily_hours }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Nessuna giornata registrata nel periodo selezionato</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="5" class="text-right">Totale ore nel periodo:</th>
+                <th class="text-right">{{ ore_totali }}</th>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div class="notes">
+        <p><strong>Note:</strong></p>
+        <ul>
+            <li>Le ore sono calcolate in base agli orari registrati.</li>
+            <li>Le giornate con assenze sono evidenziate.</li>
+            <li>Il report è stato generato il {{ data_formattata }} alle {{ ora_formattata }}.</li>
+        </ul>
+    </div>
+    
+    {% if dipendente.livello == 'totale' or dipendente.livello == 'contabile' %}
+    <div class="signatures">
+        <div class="row">
+            <div class="col-6">
+                <p class="signature-line">Firma del responsabile</p>
+            </div>
+            <div class="col-6">
+                <p class="signature-line">Firma del dipendente</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

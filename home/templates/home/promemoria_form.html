@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if is_update %}
+    Modifica promemoria - {{ promemoria.titolo }}
+  {% else %}
+    Nuovo promemoria
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">
+            {% if is_update %}
+              <i class="fas fa-edit me-1"></i> Modifica promemoria
+            {% else %}
+              <i class="fas fa-plus me-1"></i> Nuovo promemoria
+            {% endif %}
+          </h6>
+          
+          {% if is_update %}
+            <div class="dropdown no-arrow">
+              <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="{% url 'home:promemoria_list' %}">
+                  <i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i> Torna alla lista
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-danger" href="{% url 'home:promemoria_delete' pk=promemoria.pk %}">
+                  <i class="fas fa-trash fa-sm fa-fw me-2 text-gray-400"></i> Elimina
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        
+        <div class="card-body">
+          <!-- Debug info (solo per sviluppo) -->
+          {% if debug %}
+          <div class="alert alert-info mb-3">
+            <strong>Debug:</strong> Form bound: {{ form.is_bound }} | Form valid: {{ form.is_valid }}
+            {% if form.errors %}
+            <div class="mt-2">
+              <strong>Errori:</strong>
+              <pre>{{ form.errors }}</pre>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+          
+          <form method="post" class="promemoria-form needs-validation" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+            
+            <div class="mb-3">
+              <label for="{{ form.titolo.id_for_label }}" class="form-label">Titolo *</label>
+              {{ form.titolo.errors }}
+              <input type="text" name="{{ form.titolo.name }}" id="{{ form.titolo.id_for_label }}" 
+                     class="form-control {% if form.titolo.errors %}is-invalid{% endif %}" 
+                     value="{{ form.titolo.value|default:'' }}" required>
+              {% if form.titolo.help_text %}
+                <div class="form-text">{{ form.titolo.help_text }}</div>
+              {% endif %}
+              {% if form.titolo.errors %}
+                <div class="invalid-feedback">{{ form.titolo.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.descrizione.id_for_label }}" class="form-label">Descrizione</label>
+              {{ form.descrizione.errors }}
+              <textarea name="{{ form.descrizione.name }}" id="{{ form.descrizione.id_for_label }}" 
+                        class="form-control auto-resize {% if form.descrizione.errors %}is-invalid{% endif %}" 
+                        rows="4">{{ form.descrizione.value|default:'' }}</textarea>
+              {% if form.descrizione.help_text %}
+                <div class="form-text">{{ form.descrizione.help_text }}</div>
+              {% endif %}
+              {% if form.descrizione.errors %}
+                <div class="invalid-feedback">{{ form.descrizione.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.assegnato_a.id_for_label }}" class="form-label">Assegnato a *</label>
+                {{ form.assegnato_a.errors }}
+                <select name="{{ form.assegnato_a.name }}" id="{{ form.assegnato_a.id_for_label }}"
+                        class="form-select {% if form.assegnato_a.errors %}is-invalid{% endif %}" required>
+                  {% for value, text in form.assegnato_a.field.choices %}
+                    <option value="{{ value }}" {% if form.assegnato_a.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>
+                      {{ text }}
+                    </option>
+                  {% endfor %}
+                </select>
+                {% if form.assegnato_a.help_text %}
+                  <div class="form-text">{{ form.assegnato_a.help_text }}</div>
+                {% endif %}
+                {% if form.assegnato_a.errors %}
+                  <div class="invalid-feedback">{{ form.assegnato_a.errors.0 }}</div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.data_scadenza.id_for_label }}" class="form-label">Data di scadenza</label>
+                {{ form.data_scadenza.errors }}
+                <input type="date" name="{{ form.data_scadenza.name }}" id="{{ form.data_scadenza.id_for_label }}"
+                       class="form-control {% if form.data_scadenza.errors %}is-invalid{% endif %}"
+                       value="{{ form.data_scadenza.value|date:'Y-m-d'|default:'' }}">
+                {% if form.data_scadenza.help_text %}
+                  <div class="form-text">{{ form.data_scadenza.help_text }}</div>
+                {% endif %}
+                {% if form.data_scadenza.errors %}
+                  <div class="invalid-feedback">{{ form.data_scadenza.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="form-check mb-3">
+              {{ form.completato.errors }}
+              <input type="checkbox" name="{{ form.completato.name }}" id="{{ form.completato.id_for_label }}"
+                     class="form-check-input {% if form.completato.errors %}is-invalid{% endif %}"
+                     {% if form.completato.value %}checked{% endif %}>
+              <label for="{{ form.completato.id_for_label }}" class="form-check-label">Completato</label>
+              {% if form.completato.help_text %}
+                <div class="form-text">{{ form.completato.help_text }}</div>
+              {% endif %}
+              {% if form.completato.errors %}
+                <div class="invalid-feedback">{{ form.completato.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <!-- Sezione data completamento, visibile solo se completato -->
+            <div class="mb-3 completion-date {% if not form.completato.value %}d-none{% endif %}">
+              <label for="{{ form.data_completamento.id_for_label }}" class="form-label">Data di completamento</label>
+              {{ form.data_completamento.errors }}
+              <input type="datetime-local" name="{{ form.data_completamento.name }}" id="{{ form.data_completamento.id_for_label }}"
+                     class="form-control {% if form.data_completamento.errors %}is-invalid{% endif %}"
+                     value="{{ form.data_completamento.value|date:'Y-m-d\TH:i'|default:'' }}">
+              {% if form.data_completamento.help_text %}
+                <div class="form-text">{{ form.data_completamento.help_text }}</div>
+              {% endif %}
+              {% if form.data_completamento.errors %}
+                <div class="invalid-feedback">{{ form.data_completamento.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.priorita.id_for_label }}" class="form-label">Priorità</label>
+              {{ form.priorita.errors }}
+              <div class="btn-group w-100" role="group" aria-label="Priorità">
+                {% for value, text in form.priorita.field.choices %}
+                  <input type="radio" class="btn-check" name="{{ form.priorita.name }}" id="priorita_{{ value }}" 
+                         value="{{ value }}" {% if form.priorita.value|stringformat:'s' == value|stringformat:'s' or not form.priorita.value and value == 'media' %}checked{% endif %}>
+                  <label for="priorita_{{ value }}" class="btn btn-outline-primary {% if value == 'alta' %}text-danger{% elif value == 'media' %}text-warning{% elif value == 'bassa' %}text-success{% endif %}">
+                    {% if value == 'alta' %}
+                      <i class="fas fa-arrow-up me-1"></i>
+                    {% elif value == 'media' %}
+                      <i class="fas fa-minus me-1"></i>
+                    {% elif value == 'bassa' %}
+                      <i class="fas fa-arrow-down me-1"></i>
+                    {% endif %}
+                    {{ text }}
+                  </label>
+                {% endfor %}
+              </div>
+              {% if form.priorita.help_text %}
+                <div class="form-text">{{ form.priorita.help_text }}</div>
+              {% endif %}
+              {% if form.priorita.errors %}
+                <div class="invalid-feedback d-block">{{ form.priorita.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <!-- Campi nascosti -->
+            {% if form.creato_da %}
+              <input type="hidden" name="{{ form.creato_da.name }}" value="{{ form.creato_da.value|default:user.id }}">
+            {% endif %}
+            
+            <hr>
+            
+            <div class="d-flex justify-content-between">
+              <a href="{% if request.GET.next %}{{ request.GET.next }}{% else %}{% url 'home:promemoria_list' %}{% endif %}" class="btn btn-secondary">
+                <i class="fas fa-times me-1"></i> Annulla
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> 
+                {% if is_update %}Salva modifiche{% else %}Crea promemoria{% endif %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Gestione campo completato
+  const completedCheckbox = document.getElementById('{{ form.completato.id_for_label }}');
+  const completionDateDiv = document.querySelector('.completion-date');
+  
+  if (completedCheckbox && completionDateDiv) {
+    completedCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        completionDateDiv.classList.remove('d-none');
+        // Imposta data e ora attuali
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('{{ form.data_completamento.id_for_label }}').value = 
+          `${year}-${month}-${day}T${hours}:${minutes}`;
+      } else {
+        completionDateDiv.classList.add('d-none');
+      }
+    });
+  }
+  
+  // Validazione del form (disabilita per il momento per verificare i problemi di submit)
+  /*
+  const form = document.querySelector('.needs-validation');
+  if (form) {
+    form.addEventListener('submit', function(event) {
+      if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      this.classList.add('was-validated');
+    }, false);
+  }
+  */
+  
+  // Imposta oggi come data di scadenza minima
+  const dataScadenzaInput = document.getElementById('{{ form.data_scadenza.id_for_label }}');
+  if (dataScadenzaInput) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    if (!dataScadenzaInput.value) {
+      dataScadenzaInput.value = `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Aggiungi log per debug
+  const submitBtn = document.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function() {
+      console.log('Form submit clicked');
+    });
+  }
+  
+  // Fix per campi disabled che non vengono inviati
+  const form = document.querySelector('form.promemoria-form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      // Rimuovi l'attributo disabled da tutti i campi disabilitati per consentirne l'invio
+      const disabledFields = form.querySelectorAll('[disabled]');
+      disabledFields.forEach(field => {
+        field.disabled = false;
+      });
+    });
+  }
+});
+</script>
+{% endblock %}
