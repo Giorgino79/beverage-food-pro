@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Completa manutenzione{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="fas fa-check"></i> Completa manutenzione</h5>
+        </div>
+        <div class="card-body">
+          <p class="lead">
+            Vuoi marcare come <strong>completata</strong> la manutenzione
+            <strong>{{ manutenzione.get_tipo_display }}</strong>
+            programmata per il <strong>{{ manutenzione.data|date:"d/m/Y" }}</strong>
+            sull'automezzo <span class="fw-bold">{{ manutenzione.automezzo.targa }}</span>?
+          </p>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Sì, completa ora
+              </button>
+              <a href="{% url 'automezzi:dettaglio' manutenzione.automezzo.pk %}?sezione=manutenzioni" class="btn btn-light ms-2">
+                Annulla
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

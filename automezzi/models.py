@@ -231,10 +231,14 @@ class Manutenzione(models.Model):
         super().save(*args, **kwargs)
 
 
+from django.db import models
+from datetime import date
+# ... altri import necessari
+
 class RifornimentoCarburante(models.Model):
     """Gestione dei rifornimenti di carburante"""
     
-    automezzo = models.ForeignKey(Automezzo, on_delete=models.CASCADE, related_name='rifornimenti')
+    automezzo = models.ForeignKey('Automezzo', on_delete=models.CASCADE, related_name='rifornimenti')
     data_rifornimento = models.DateField(default=date.today)
     chilometri = models.PositiveIntegerField(help_text="Chilometraggio al momento del rifornimento")
     litri = models.DecimalField(max_digits=6, decimal_places=2, help_text="Litri riforniti")
@@ -242,8 +246,8 @@ class RifornimentoCarburante(models.Model):
     costo_per_litro = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
     distributore = models.CharField(max_length=200, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
-    
-    # Chi ha effettuato il rifornimento
+    foto_scontrino = models.ImageField(upload_to='rifornimenti/scontrini/', blank=True, null=True)  # CAMPO AGGIUNTO
+
     effettuato_da = models.ForeignKey(
         'dipendenti.Dipendente',
         on_delete=models.SET_NULL,
@@ -251,8 +255,7 @@ class RifornimentoCarburante(models.Model):
         blank=True,
         related_name='rifornimenti_effettuati'
     )
-    
-    # Timestamp
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -299,7 +302,6 @@ class RifornimentoCarburante(models.Model):
         if self.chilometri_percorsi > 0:
             return (self.litri / self.chilometri_percorsi) * 100
         return None
-
 
 class EventoAutomezzo(models.Model):
     """Eventi generici associati agli automezzi (sinistri, verifiche, altro)"""

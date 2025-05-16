@@ -302,92 +302,22 @@ class ManutenzioneForm(forms.ModelForm):
         return cleaned_data
 
 
+
 class RifornimentoCarburanteForm(forms.ModelForm):
-    """Form per la registrazione dei rifornimenti"""
-    
     class Meta:
         model = RifornimentoCarburante
         fields = [
-            'data_rifornimento', 'chilometri', 'litri', 'costo_totale',
-            'costo_per_litro', 'distributore', 'effettuato_da', 'note'
+            'automezzo', 'data_rifornimento', 'chilometri', 'litri', 'costo_totale',
+            'costo_per_litro', 'distributore', 'note', 'foto_scontrino', 'effettuato_da'
         ]
         widgets = {
-            'data_rifornimento': DateInput(),
-            'litri': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'costo_totale': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'costo_per_litro': forms.NumberInput(attrs={'step': '0.001', 'min': '0'}),
-            'chilometri': forms.NumberInput(attrs={'min': '0'}),
-            'note': forms.Textarea(attrs={'rows': 2}),
+            'data_rifornimento': forms.DateInput(attrs={'type': 'date'}),
         }
-    
-    def __init__(self, *args, **kwargs):
-        self.automezzo = kwargs.pop('automezzo', None)
-        super().__init__(*args, **kwargs)
-        
-        # Imposta i chilometri attuali come valore di default
-        if self.automezzo and not self.instance.pk:
-            self.fields['chilometri'].initial = self.automezzo.chilometri_attuali
-        
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
-        self.helper.layout = Layout(
-            Fieldset(
-                f'Rifornimento per {self.automezzo.targa if self.automezzo else "Automezzo"}',
-                Row(
-                    Column('data_rifornimento', css_class='form-group col-md-6'),
-                    Column('chilometri', css_class='form-group col-md-6'),
-                ),
-                Row(
-                    Column('litri', css_class='form-group col-md-4'),
-                    Column('costo_totale', css_class='form-group col-md-4'),
-                    Column('costo_per_litro', css_class='form-group col-md-4'),
-                ),
-                HTML('<small class="form-text text-muted">Il costo per litro verrà calcolato automaticamente se lasciato vuoto</small>'),
-                Row(
-                    Column('distributore', css_class='form-group col-md-6'),
-                    Column('effettuato_da', css_class='form-group col-md-6'),
-                ),
-                'note',
-            ),
-            FormActions(
-                Submit('submit', 'Salva Rifornimento', css_class='btn btn-primary'),
-            )
-        )
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        chilometri = cleaned_data.get('chilometri')
-        
-        # Verifica che i chilometri non siano inferiori a quelli attuali dell'automezzo
-        if self.automezzo and chilometri:
-            if chilometri < self.automezzo.chilometri_attuali:
-                raise forms.ValidationError(
-                    f"I chilometri del rifornimento ({chilometri}) non possono essere inferiori "
-                    f"ai chilometri attuali dell'automezzo ({self.automezzo.chilometri_attuali})"
-                )
-        
-        return cleaned_data
-    
-    def clean_chilometri(self):
-        """Validazione specifica per il campo chilometri"""
-        chilometri = self.cleaned_data.get('chilometri')
-        
-        # Controlla che non ci siano già rifornimenti con chilometri superiori
-        if self.automezzo and chilometri:
-            rifornimenti_successivi = RifornimentoCarburante.objects.filter(
-                automezzo=self.automezzo,
-                chilometri__gt=chilometri
-            )
-            if self.instance.pk:
-                rifornimenti_successivi = rifornimenti_successivi.exclude(pk=self.instance.pk)
-            
-            if rifornimenti_successivi.exists():
-                raise forms.ValidationError(
-                    "Esistono già rifornimenti registrati con chilometri superiori"
-                )
-        
-        return chilometri
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Personalizza i widget o le label se vuoi
+        self.fields['foto_scontrino'].required = False
 
 class EventoAutomezzoForm(forms.ModelForm):
     """Form per la gestione degli eventi degli automezzi"""

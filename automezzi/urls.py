@@ -40,19 +40,22 @@ urlpatterns = [
             path('<int:pk>/completa/', views.manutenzione_completa, name='completa_manutenzione'),
         ])),
         
-        # ===================== RIFORNIMENTI AUTOMEZZO =====================
-        path('<int:automezzo_pk>/rifornimenti/', include([
-            path('nuovo/', views.RifornimentoCreateView.as_view(), name='nuovo_rifornimento'),
-            path('<int:pk>/modifica/', views.RifornimentoUpdateView.as_view(), name='modifica_rifornimento'),
-        ])),
+       # ===================== RIFORNIMENTI AUTOMEZZO =====================
+    path('<int:automezzo_pk>/rifornimenti/', include([
+        path('', views.RifornimentiListView.as_view(), name='elenco_rifornimenti'),  # elenco rifornimenti (se hai la ListView)
+        path('nuovo/', views.RifornimentoCreateView.as_view(), name='nuovo_rifornimento'),
+        path('<int:pk>/', views.RifornimentoDetailView.as_view(), name='dettaglio_rifornimento'),
+        path('<int:pk>/modifica/', views.RifornimentoUpdateView.as_view(), name='modifica_rifornimento'),
+        path('report/', views.RifornimentiReportView.as_view(), name='report_rifornimenti'),
+    ])),
         
-        # ===================== EVENTI AUTOMEZZO =====================
         path('<int:automezzo_pk>/eventi/', include([
-            path('nuovo/', views.EventoCreateView.as_view(), name='nuovo_evento'),
-            path('<int:pk>/modifica/', views.EventoUpdateView.as_view(), name='modifica_evento'),
-            path('<int:pk>/risolvi/', views.evento_risolvi, name='risolvi_evento'),
-        ])),
-        
+    path('', views.EventiAutomezzoListView.as_view(), name='eventi_elenco'),
+    path('nuovo/', views.EventoCreateView.as_view(), name='nuovo_evento'),
+    path('<int:pk>/', views.EventoDetailView.as_view(), name='dettaglio_evento'),
+    path('<int:pk>/modifica/', views.EventoUpdateView.as_view(), name='modifica_evento'),
+    path('<int:pk>/risolvi/', views.evento_risolvi, name='risolvi_evento'),
+])),
         # ===================== UTILITY AUTOMEZZO =====================
         path('<int:pk>/toggle-disponibilita/', views.toggle_disponibilita, name='toggle_disponibilita'),
         path('<int:pk>/aggiorna-statistiche/', views.aggiorna_statistiche, name='aggiorna_statistiche'),

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dettaglio documento: {{ documento.get_tipo_display }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card shadow mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0 text-primary">
+            <i class="fas fa-file-alt"></i> Dettaglio documento
+          </h5>
+          <a href="{% url 'automezzi:dettaglio' documento.automezzo.pk %}?sezione=documenti" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left"></i> Torna all'automezzo
+          </a>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-5">Tipo documento:</dt>
+            <dd class="col-sm-7 fw-bold">{{ documento.get_tipo_display }}</dd>
+
+            <dt class="col-sm-5">Numero documento:</dt>
+            <dd class="col-sm-7">{{ documento.numero_documento|default:"—" }}</dd>
+
+            <dt class="col-sm-5">Data rilascio:</dt>
+            <dd class="col-sm-7">{{ documento.data_rilascio|date:"d/m/Y" }}</dd>
+
+            <dt class="col-sm-5">Data scadenza:</dt>
+            <dd class="col-sm-7">
+              {{ documento.data_scadenza|date:"d/m/Y" }}
+              {% if documento.is_scaduto %}
+                <span class="badge bg-danger ms-2">Scaduto</span>
+              {% elif documento.is_in_scadenza %}
+                <span class="badge bg-warning text-dark ms-2">In scadenza</span>
+              {% else %}
+                <span class="badge bg-success ms-2">Valido</span>
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-5">Giorni alla scadenza:</dt>
+            <dd class="col-sm-7">
+              {% if documento.giorni_alla_scadenza is not None %}
+                {{ documento.giorni_alla_scadenza }}
+              {% else %}
+                —
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-5">Costo:</dt>
+            <dd class="col-sm-7">{{ documento.costo|floatformat:2 }} €</dd>
+
+            <dt class="col-sm-5">File allegato:</dt>
+            <dd class="col-sm-7">
+              {% if documento.file_documento %}
+                <a href="{{ documento.file_documento.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-download"></i> Scarica / Visualizza
+                </a>
+              {% else %}
+                <span class="text-muted">Nessun file</span>
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-5">Note:</dt>
+            <dd class="col-sm-7">{{ documento.note|linebreaksbr|default:"—" }}</dd>
+          </dl>
+        </div>
+        <div class="card-footer text-end">
+          <a href="{% url 'automezzi:modifica_documento' documento.pk %}" class="btn btn-info btn-sm me-2">
+            <i class="fas fa-edit"></i> Modifica
+          </a>
+          <a href="{% url 'automezzi:elimina_documento' documento.pk %}" class="btn btn-danger btn-sm">
+            <i class="fas fa-trash-alt"></i> Elimina
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block javascripts %}
+{% endblock %}

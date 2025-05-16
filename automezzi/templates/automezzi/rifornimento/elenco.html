@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Rifornimenti di {{ automezzo.targa }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="fas fa-gas-pump"></i> Rifornimenti – {{ automezzo.targa }}</h4>
+    <a href="{% url 'automezzi:nuovo_rifornimento' automezzo_pk=automezzo.pk %}" class="btn btn-success">
+      <i class="fas fa-plus"></i> Nuovo rifornimento
+    </a>
+  </div>
+
+  {% if rifornimenti %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Km</th>
+            <th>Litri</th>
+            <th>Costo tot.</th>
+            <th>Costo/Litro</th>
+            <th>Scontrino</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rifornimenti %}
+          <tr>
+            <td>{{ r.data_rifornimento|date:"d/m/Y" }}</td>
+            <td>{{ r.chilometri|intcomma }}</td>
+            <td>{{ r.litri|floatformat:2 }}</td>
+            <td>{{ r.costo_totale|floatformat:2 }} €</td>
+            <td>{{ r.costo_per_litro|floatformat:3 }} €</td>
+            <td>
+              {% if r.foto_scontrino %}
+                <a href="{{ r.foto_scontrino.url }}" target="_blank">
+                  <img src="{{ r.foto_scontrino.url }}" alt="Scontrino" class="img-thumbnail" style="max-width:56px;">
+                </a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'automezzi:dettaglio_rifornimento' automezzo_pk=automezzo.pk pk=r.pk %}" class="btn btn-sm btn-outline-primary" title="Dettaglio">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a href="{% url 'automezzi:modifica_rifornimento' automezzo_pk=automezzo.pk pk=r.pk %}" class="btn btn-sm btn-outline-info" title="Modifica">
+                <i class="fas fa-edit"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Nessun rifornimento registrato per questo automezzo.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'django.contrib.humanize',
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'corsheaders',
